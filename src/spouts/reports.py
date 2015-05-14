@@ -16,6 +16,7 @@ class S3ReportsSpout(Spout):
         try:
             sanitised_report, raw_report = next(self.reports)
             report_id = sanitised_report['report_id']
+            print("Next tuple is %s" % sanitised_report['record_type'])
             t = [report_id, sanitised_report['record_type'], sanitised_report]
             self.emit(t)
         except StopIteration:

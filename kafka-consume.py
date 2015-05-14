@@ -90,14 +90,14 @@ class BucketManager(object):
             print(message)
         self.message_queue_bucket['reports'][report_id].append(message)
 
-        if data[0] in ('e', 'h'):
+        if data[0] in ("e", "h"):
+            print("Got a %s" % data[0])
             self.add_to_report_bucket(report_id, data[1:])
-        elif data[0] == 'f':
-            print "Got a footer"
+        elif data[0] == "f":
             report = json.loads(data[1:])
             self.add_to_report_bucket(report_id, data[1:])
             self.add_to_date_bucket(report)
-        elif data[0] == 'd':
+        elif data[0] == "d":
             self.flush_all()
 
     def add_to_report_bucket(self, report_id, report_data):
