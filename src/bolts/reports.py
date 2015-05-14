@@ -16,6 +16,7 @@ class KafkaBolt(Bolt):
 
     def process(self, tup):
         report_id, record_type, report = tup.values
+        self.log('Processing: %s' % report_id)
         json_data = json_dumps(report)
         report_id = str(report_id)
         topic = str("sanitised")
@@ -26,4 +27,3 @@ class KafkaBolt(Bolt):
         elif record_type == "footer":
             payload = str("f" + json_data)
         self.keyed_producer.send(topic, report_id, payload)
-        self.log('Processing: %s' % report_id)
