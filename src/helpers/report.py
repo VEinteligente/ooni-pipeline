@@ -35,6 +35,7 @@ class Report(object):
 
     def process_header(self, report):
         self._raw_header = report.next()
+        self._raw_header["record_type"] = "header"
 
         date = datetime.fromtimestamp(self._raw_header["start_time"])
         date = date.strftime("%Y-%m-%d")
@@ -44,7 +45,6 @@ class Report(object):
             self._raw_header["report_id"] = date + nonce
 
         header_entry = self._raw_header.copy()
-        header_entry["record_type"] = "header"
 
         self._sanitised_header = self.sanitise_header(header_entry)
 
@@ -56,13 +56,15 @@ class Report(object):
         return sanitise.run(self._raw_header['test_name'], entry)
 
     def process_entry(self, entry):
-        entry["record_type"] = "entry"
-
         raw_entry = entry.copy()
         sanitised_entry = entry.copy()
 
         raw_entry.update(self._raw_header)
         sanitised_entry.update(self._sanitised_header)
+
+        raw_entry["record_type"] = "entry"
+        sanitised_entry["record_type"] = "entry"
+
         sanitised_entry = self.sanitise_entry(sanitised_entry)
         return sanitised_entry, raw_entry
 
