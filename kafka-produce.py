@@ -1,6 +1,10 @@
+import os
+import sys
+
 from kafka import KafkaClient, SimpleProducer
 from boto.s3.connection import S3Connection
 
+sys.path.insert(os.path.join(os.path.dirname(__file__), 'src'))
 from helper.settings import config
 
 folder = 'reports'
