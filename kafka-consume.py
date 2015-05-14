@@ -125,7 +125,7 @@ class BucketManager(object):
                 else:
                     print("Dates: No good")
                     print(m)
-                self.message_queue_bucket['dates'][report_date] += m
+                self.message_queue_bucket['dates'][report_date].append(m)
             except IndexError:
                 break
 
