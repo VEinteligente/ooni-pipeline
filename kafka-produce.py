@@ -18,5 +18,5 @@ s3_connection = S3Connection(access_key_id, secret_access_key)
 bucket = s3_connection.get_bucket(bucket_name)
 
 for key in bucket.list(folder):
-    report_uri = "s3://%s/%s/%s" % (bucket_name, folder, key.name)
-    simple_producer.send_messages("report-uris", report_uri)
+    report_uri = "s3://%s/%s" % (bucket_name, key.name)
+    simple_producer.send_messages("report-uris", str(report_uri))

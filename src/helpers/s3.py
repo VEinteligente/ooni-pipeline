@@ -19,7 +19,8 @@ class S3Downloader(object):
             if not chunk:
                 break
             fp.write(decompressor.decompress(chunk))
-        fp.close()
+        fp.flush()
+        fp.seek(0)
 
     def download(self, uri, fp=None):
         p = urlparse(uri)

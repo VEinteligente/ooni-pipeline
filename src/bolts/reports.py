@@ -31,6 +31,7 @@ class ReportParseBolt(Bolt):
             report_id = sanitised_entry["report_id"]
             record_type = sanitised_entry["record_type"]
             self.emit([report_id, record_type, sanitised_entry])
+        in_file.close()
         os.remove(in_file.path)
 
 
