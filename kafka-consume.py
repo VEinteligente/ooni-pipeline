@@ -108,7 +108,7 @@ class BucketManager(object):
         while True:
             try:
                 m = self.message_queue_bucket['reports'][report_id].pop()
-                print("appending %s" % m)
+                print m
                 self.message_queue_bucket['dates'][report_date] += m
             except IndexError:
                 break
