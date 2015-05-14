@@ -1,5 +1,5 @@
 (defproject ooni-pipeline "0.0.1-SNAPSHOT"
-  :source-paths ["topologies"]
+  :source-paths ["src/clj" "topologies"]
   :resource-paths ["_resources"]
   :target-path "_build"
   :min-lein-version "2.0.0"
