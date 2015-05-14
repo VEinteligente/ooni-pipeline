@@ -32,7 +32,7 @@ class ReportParseBolt(Bolt):
             record_type = sanitised_entry["record_type"]
             self.emit([report_id, record_type, sanitised_entry])
         in_file.close()
-        os.remove(in_file.path)
+        os.remove(in_file.name)
 
 
 class KafkaBolt(Bolt):
