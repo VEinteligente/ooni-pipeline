@@ -32,7 +32,7 @@ class S3Downloader(object):
         key.open('r')
 
         if fp is None:
-            fp = tempfile.NamedTemporaryFile('wb',
+            fp = tempfile.NamedTemporaryFile('wb+',
                                              prefix='s3-downloader-tmp',
                                              delete=False)
         if p.path.endswith('.gz'):
