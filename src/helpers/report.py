@@ -70,12 +70,14 @@ class Report(object):
     def footer(self):
         raw = self._raw_header.copy()
         sanitised = self._sanitised_header.copy()
-        if not self._end_time:
-            self._end_time = time.time()
+
+        process_time = None
+        if self._end_time:
+            process_time = self._end_time - self._start_time
 
         extra_keys = {
             'record_type': 'footer',
-            'stage_1_process_time': self._start_time - self._end_time
+            'stage_1_process_time': process_time
         }
 
         raw.update(extra_keys)
@@ -95,6 +97,7 @@ class Report(object):
                 yield self.process_entry(entry)
             except StopIteration:
                 break
+        self._end_time = time.time()
 
 
 def uncompress_to_disk(report_file):

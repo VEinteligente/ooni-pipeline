@@ -51,7 +51,7 @@ class BucketManager(object):
         print("Flushing date bucket %s" % date)
         self.date_buckets[date].seek(0)
         base_name = os.path.join(self.output_dir, date + self.suffix)
-        idx = 1
+        idx = 0
         while os.path.exists("%s-%s" % (base_name, idx)):
             idx += 1
         dst_file = "%s-%s" % (base_name, idx)
