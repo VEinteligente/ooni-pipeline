@@ -6,7 +6,7 @@ from datetime import datetime
 from StringIO import StringIO
 
 from kafka import KafkaConsumer
-from kafka.common import ConsumerTimeout
+from kafka.common import ConsumerTimeout, KafkaMessage
 
 
 class TimedStringIO(StringIO):
@@ -61,6 +61,11 @@ class BucketManager(object):
         while True:
             try:
                 message = self.message_queue_bucket['dates'][date].pop()
+                if isinstance(message, KafkaMessage):
+                    print("It's of the good type")
+                else:
+                    print("No good")
+                    print(message)
                 self.consumer.task_done(message)
             except IndexError:
                 break
@@ -77,6 +82,11 @@ class BucketManager(object):
         report_id = message.key
         if not self.message_queue_bucket['reports'].get(report_id):
             self.message_queue_bucket['reports'][report_id] = []
+        if isinstance(message, KafkaMessage):
+            print("Reports: It's of the good type")
+        else:
+            print("Reports: No good")
+            print(message)
         self.message_queue_bucket['reports'][report_id].append(message)
 
         if data[0] in ('e', 'h'):
@@ -108,7 +118,11 @@ class BucketManager(object):
         while True:
             try:
                 m = self.message_queue_bucket['reports'][report_id].pop()
-                print m
+                if isinstance(m, KafkaMessage):
+                    print("Reports: It's of the good type")
+                else:
+                    print("Reports: No good")
+                    print(m)
                 self.message_queue_bucket['dates'][report_date] += m
             except IndexError:
                 break
