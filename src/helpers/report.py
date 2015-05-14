@@ -131,8 +131,10 @@ class ReportStreamEmitter(object):
 
     def parse(self, report_file):
         report_file.open('r')
+        print("Uncompressing %s" % report_file.name)
         uncompressed_path = uncompress_to_disk(report_file)
         report_file.close()
+        print("Uncompressed %s" % report_file.name)
         with open(uncompressed_path) as in_file:
             report = Report(in_file)
             yield report.header['sanitised'], report.header['raw']
