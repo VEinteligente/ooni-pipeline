@@ -22,7 +22,7 @@ class ReportParseBolt(Bolt):
     def process(self, tup):
         report_uri = tup.values[0]
         if report_uri.startswith('s3'):
-            in_file = self.s3_downloader(report_uri)
+            in_file = self.s3_downloader.download(report_uri)
         else:
             self.fail(tup)
             raise Exception("Unsupported URI")

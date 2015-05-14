@@ -4,8 +4,8 @@ import sys
 from kafka import KafkaClient, SimpleProducer
 from boto.s3.connection import S3Connection
 
-sys.path.insert(os.path.join(os.path.dirname(__file__), 'src'))
-from helper.settings import config
+sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+from helpers.settings import config
 
 folder = 'reports'
 access_key_id = config["aws"]["access-key-id"]
@@ -18,5 +18,5 @@ s3_connection = S3Connection(access_key_id, secret_access_key)
 bucket = s3_connection.get_bucket(bucket_name)
 
 for key in bucket.list(folder):
-    report_uri = "s3://%s/%s/%s" % (bucket_name, folder, key.path)
+    report_uri = "s3://%s/%s/%s" % (bucket_name, folder, key.name)
     simple_producer.send_messages("report-uris", report_uri)
