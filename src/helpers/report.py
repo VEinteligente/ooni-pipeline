@@ -139,6 +139,7 @@ class ReportStreamEmitter(object):
             for sanitised_report, raw_report in report.process():
                 yield sanitised_report, raw_report
             yield report.footer['sanitised'], report.footer['raw']
+        os.remove(uncompressed_path)
 
     def emit(self):
         for report_file in self.next_report():
