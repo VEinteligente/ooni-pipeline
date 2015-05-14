@@ -83,7 +83,8 @@ class BucketManager(object):
         if not self.message_queue_bucket['reports'].get(report_id):
             self.message_queue_bucket['reports'][report_id] = []
         if isinstance(message, KafkaMessage):
-            print("Reports: It's of the good type")
+            # print("Reports: It's of the good type")
+            pass
         else:
             print("Reports: No good")
             print(message)
@@ -119,9 +120,10 @@ class BucketManager(object):
             try:
                 m = self.message_queue_bucket['reports'][report_id].pop()
                 if isinstance(m, KafkaMessage):
-                    print("Reports: It's of the good type")
+                    pass
+                    # print("Reports: It's of the good type")
                 else:
-                    print("Reports: No good")
+                    print("Dates: No good")
                     print(m)
                 self.message_queue_bucket['dates'][report_date] += m
             except IndexError:
