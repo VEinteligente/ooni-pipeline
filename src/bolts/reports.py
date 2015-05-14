@@ -30,7 +30,8 @@ class ReportParseBolt(Bolt):
         for sanitised_entry, raw_entry in report.entries():
             report_id = sanitised_entry["report_id"]
             record_type = sanitised_entry["record_type"]
-            self.emit([report_id, record_type, sanitised_entry])
+            s_report_data = json_dumps(sanitised_entry)
+            self.emit([report_id, record_type, s_report_data])
         in_file.close()
         os.remove(in_file.name)
 
@@ -43,9 +44,9 @@ class KafkaBolt(Bolt):
         self.simple_producer = SimpleProducer(self.kafka_client)
 
     def process(self, tup):
-        report_id, record_type, report = tup.values
+        report_id, record_type, report_data = tup.values
         self.log('Processing: %s' % report_id)
-        json_data = json_dumps(report)
+        json_data = str(report_data)
         report_id = str(report_id)
         topic = str("sanitised")
         if record_type == "entry":
