@@ -55,6 +55,7 @@ class BucketManager(object):
         dst_file = "%s-%s" % (base_name, idx)
         while os.path.exists("%s-%s" % (base_name, idx)):
             dst_file = "%s-%s" % (base_name, idx)
+            idx += 1
         with open(dst_file, 'w+') as out_file:
             shutil.copyfileobj(self.date_buckets[date], out_file)
         while True:
