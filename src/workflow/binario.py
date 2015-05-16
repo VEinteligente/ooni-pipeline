@@ -54,8 +54,12 @@ class Pipe(BaseNode):
 
     def _run_process(self):
         data = self.input_queue.get()
-        for output in self.process(data):
-            self.send(output)
+        try:
+            items = iter(self.process(data))
+            for output in items:
+                self.send(output)
+        except TypeError:
+            pass
         self._processed()
 
     def _processed(self):
