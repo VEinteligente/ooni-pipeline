@@ -1,4 +1,5 @@
 import time
+import traceback
 from datetime import datetime
 from multiprocessing import Process, Semaphore, Queue
 
@@ -60,6 +61,9 @@ class Pipe(BaseNode):
                 self.send(output)
         except TypeError:
             pass
+        except Exception:
+            print("Failed to process")
+            print(traceback.format_exc())
         self._processed()
 
     def _processed(self):
