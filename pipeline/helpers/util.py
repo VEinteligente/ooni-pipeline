@@ -78,7 +78,7 @@ def list_report_files(directory, aws_access_key_id=None,
             yield path
 
 
-def get_luigi_target(self, path):
+def get_luigi_target(path):
     from luigi.s3 import S3Target
     from luigi.file import LocalTarget
     from luigi.format import GzipFormat
