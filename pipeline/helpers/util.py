@@ -53,9 +53,8 @@ def _s3_walker(aws_access_key_id, aws_secret_access_key):
         p = urlparse(directory)
         bucket_name = p.netloc
         bucket = con.get_bucket(bucket_name)
-        keys = bucket.list(p.path)
+        keys = bucket.list(p.path[1:])
         for key in keys:
-            print("Found this key %s" % key)
             yield os.path.join(bucket_name, key.name)
     return _walk_s3_directory
 
