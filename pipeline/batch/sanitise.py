@@ -51,7 +51,7 @@ class AggregateYAMLReports(ExternalTask):
             sanitised_yaml_filename
         )).open('w')
         with target.open('r') as in_file:
-            report = Report(in_file)
+            report = Report(in_file, self.bridge_db)
             print("Working it")
             for sanitised_entry, raw_entry in report.entries():
                 s_data = json_dumps(sanitised_entry)
