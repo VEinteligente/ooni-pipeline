@@ -75,6 +75,7 @@ class AggregateYAMLReports(ExternalTask):
         for filename in list_report_files(reports_path,
                                           config.get("s3", "aws_access_key_id"),
                                           config.get("s3", "aws_secret_access_key")):
+            print("Got filename %s" % filename)
             self.process_report(filename, sanitised_streams, raw_streams)
         raw_streams.close()
         sanitised_streams.close()
