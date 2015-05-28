@@ -5,7 +5,7 @@ from invoke import Collection, ctask as task
 from pipeline.helpers.util import setup_pipeline_logging, Timer
 
 config = Config(runtime_path="invoke.yaml")
-logger = setup_pipeline_logging()
+logger = setup_pipeline_logging(config)
 
 
 def _create_luigi_cfg():
