@@ -93,16 +93,22 @@ def get_luigi_target(path):
     return LocalTarget(path, format=file_format)
 
 def setup_pipeline_logging(config):
+    log_level = getattr(logging, config.logging.level)
     logger = logging.getLogger('ooni-pipeline')
-    logger.setLevel(getattr(logging, config.logging.level))
+    logger.setLevel(log_level)
 
-    handler = logging.FileHandler(config.logging.filename)
-    handler.setLevel(logging.INFO)
+    file_handler = logging.FileHandler(config.logging.filename)
+    file_handler.setLevel(log_level)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(log_level)
 
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
+    stream_handler.setFormatter(formatter)
 
-    logger.addHandler(handler)
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
     return logger
 
 class Timer(object):
