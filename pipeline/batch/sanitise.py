@@ -26,7 +26,7 @@ class AggregateYAMLReports(ExternalTask):
             "streams",
             self.date.strftime("%Y-%m-%y.json")
         ))
-        raw_streams = self.get_luigi_target(os.path.join(
+        raw_streams = get_luigi_target(os.path.join(
             self.dst_private,
             "reports-raw",
             "streams",
@@ -38,11 +38,11 @@ class AggregateYAMLReports(ExternalTask):
         }
 
     def process_report(self, filename, sanitised_streams, raw_streams):
-        target = self.get_luigi_target(filename)
+        target = get_luigi_target(filename)
         sanitised_yaml_filename = os.path.basename(filename)
         if not sanitised_yaml_filename.endswith(".gz"):
             sanitised_yaml_filename = sanitised_yaml_filename + ".gz"
-        sanitised_yaml = self.get_luigi_target(os.path.join(
+        sanitised_yaml = get_luigi_target(os.path.join(
             self.dst_public,
             "reports-sanitised",
             "yaml",
