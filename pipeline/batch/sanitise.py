@@ -52,9 +52,13 @@ class AggregateYAMLReports(ExternalTask):
         )).open('w')
         with target.open('r') as in_file:
             report = Report(in_file)
+            print("Working it")
             for sanitised_entry, raw_entry in report.entries():
-                sanitised_streams.write(json_dumps(sanitised_entry))
+                s_data = json_dumps(sanitised_entry)
+                sanitised_streams.write(s_data)
                 sanitised_streams.write("\n")
+                print("Writing")
+                print(s_data)
                 raw_streams.write(json_dumps(raw_entry))
                 raw_streams.write("\n")
                 yaml_dump(sanitised_entry, sanitised_yaml)
@@ -67,6 +71,7 @@ class AggregateYAMLReports(ExternalTask):
 
         reports_path = os.path.join(self.src,
                                     self.date.strftime("%Y-%m-%y"))
+        print("Listing path %s" % reports_path)
         for filename in list_report_files(reports_path,
                                           config.get("s3", "aws_access_key_id"),
                                           config.get("s3", "aws_secret_access_key")):
