@@ -1,5 +1,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
+import time
+import logging
 # XXX add support for python 3
 from urlparse import urlparse
 import base64
@@ -89,3 +91,36 @@ def get_luigi_target(path):
     if path.startswith("s3n://"):
         return S3Target(path, format=file_format)
     return LocalTarget(path, format=file_format)
+
+def setup_pipeline_logging(config):
+    logger = logging.getLogger('ooni-pipeline')
+    logger.setLevel(getattr(logging, config.logging.level))
+
+    handler = logging.FileHandler(config.logging.filename)
+    handler.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+
+    logger.addHandler(handler)
+    return logger
+
+class Timer(object):
+    def __init__(self):
+        self.start_time = None
+        self.end_time = None
+
+    @property
+    def runtime(self):
+        if self.start_time is None:
+            raise RuntimeError("Did not call start")
+        if self.end_time:
+            return self.end_time - self.start_time
+        return time.time() - self.start_time
+
+    def start(self):
+        self.start_time = time.time()
+
+    def stop(self):
+        self.end_time = time.time()
+        return self.runtime
