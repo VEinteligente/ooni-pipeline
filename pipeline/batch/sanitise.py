@@ -5,6 +5,7 @@ import luigi
 import luigi.worker
 import luigi.hdfs
 from luigi.task import ExternalTask
+from luigi.configuration import get_config
 
 from pipeline.helpers.report import Report
 from pipeline.helpers.util import json_dumps, yaml_dump
@@ -59,13 +60,16 @@ class AggregateYAMLReports(ExternalTask):
                 yaml_dump(sanitised_entry, sanitised_yaml)
 
     def run(self):
+        config = get_config()
         output = self.output()
         raw_streams = output["raw_streams"].open('w')
         sanitised_streams = output["sanitised_streams"].open('w')
 
         reports_path = os.path.join(self.src,
                                     self.date.strftime("%Y-%m-%y"))
-        for filename in list_report_files(reports_path):
+        for filename in list_report_files(reports_path,
+                                          config.get("s3", "aws_access_key_id"),
+                                          config.get("s3", "aws_secret_access_key")):
             self.process_report(filename, sanitised_streams, raw_streams)
         raw_streams.close()
         sanitised_streams.close()
