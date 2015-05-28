@@ -25,13 +25,13 @@ class AggregateYAMLReports(ExternalTask):
             self.dst_public,
             "reports-sanitised",
             "streams",
-            self.date.strftime("%Y-%m-%y.json")
+            self.date.strftime("%Y-%m-%d.json")
         ))
         raw_streams = get_luigi_target(os.path.join(
             self.dst_private,
             "reports-raw",
             "streams",
-            self.date.strftime("%Y-%m-%y.json")
+            self.date.strftime("%Y-%m-%d.json")
         ))
         return {
             "raw_streams": raw_streams,
@@ -47,7 +47,7 @@ class AggregateYAMLReports(ExternalTask):
             self.dst_public,
             "reports-sanitised",
             "yaml",
-            self.date.strftime("%Y-%m-%y"),
+            self.date.strftime("%Y-%m-%d"),
             sanitised_yaml_filename
         )).open('w')
         with target.open('r') as in_file:
@@ -70,7 +70,7 @@ class AggregateYAMLReports(ExternalTask):
         sanitised_streams = output["sanitised_streams"].open('w')
 
         reports_path = os.path.join(self.src,
-                                    self.date.strftime("%Y-%m-%y"))
+                                    self.date.strftime("%Y-%m-%d"))
         print("Listing path %s" % reports_path)
         for filename in list_report_files(reports_path,
                                           config.get("s3", "aws_access_key_id"),
