@@ -91,7 +91,7 @@ def run(src, dst_private, dst_public, date_interval, bridge_db_path,
         worker_processes=16):
 
     with get_luigi_target(bridge_db_path).open('r') as f:
-        bridge_db = json.loads(f)
+        bridge_db = json.load(f)
 
     luigi.interface.setup_interface_logging()
     sch = luigi.scheduler.CentralPlannerScheduler()
