@@ -85,7 +85,7 @@ def get_imported_dates(directory,aws_access_key_id=None,
                         recursive=False)
     dates = []
     for date_directory in walker(directory):
-        dates.append(os.path.basename(date_directory))
+        dates.append(date_directory.split("/")[-2])
     return dates
 
 def get_luigi_target(path):
