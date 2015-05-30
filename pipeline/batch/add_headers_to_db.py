@@ -76,8 +76,11 @@ def run(src, dst_private, dst_public, date_interval, bridge_db_path,
     w = luigi.worker.Worker(scheduler=sch,
                             worker_processes=worker_processes)
 
+    imported_dates = get_imported_dates(src)
     interval = get_date_interval(date_interval)
     for date in interval:
+        if str(date) not in imported_dates:
+            continue
         logging.info("adding headers for date: %s" % date)
         task = ReportHeadersToDatabase(dst_private=dst_private,
                                        dst_public=dst_public,
