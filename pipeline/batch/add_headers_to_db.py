@@ -8,6 +8,7 @@ import luigi.postgres
 from invoke.config import Config
 
 from pipeline.helpers.util import json_loads, get_date_interval, get_luigi_target
+from pipeline.helpers.util import get_imported_dates
 from pipeline.helpers.report import header_avro
 
 from pipeline.batch.sanitise import AggregateYAMLReports
