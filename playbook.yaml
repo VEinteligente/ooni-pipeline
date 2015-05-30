@@ -23,7 +23,7 @@
           - device_name: /dev/sdc
             ephemeral: ephemeral0
           - device_name: /dev/sdd
-            ephemeral: ephemeral0
+            ephemeral: ephemeral1
       register: ec2
 
     - name: Add new instances to host group
@@ -49,6 +49,14 @@
   vars:
     virtualenv_name: pipeline
   tasks:
+    - name: Mount ephemeral to tmp
+      mount: name=/tmp src=/dev/sdc state=mounted options=rw
+      sudo: yes
+
+    - name: Set permissions on /tmp
+      file: path=/tmp mode=777
+      sudo: yes
+
     - name: Update all packages
       yum: name=* state=latest
       sudo: yes
