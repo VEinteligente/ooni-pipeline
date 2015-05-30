@@ -18,8 +18,8 @@ hdfs-tmp-dir: {tmp_dir}
 access-key-id: {aws_access_key_id}
 secret-access-key: {aws_secret_access_key}
 [s3]
-aws-access-key-id: {aws_access_key_id}
-aws-secret-access-key: {aws_secret_access_key}
+aws_access_key_id: {aws_access_key_id}
+aws_secret_access_key: {aws_secret_access_key}
 [kafka]
 hosts: {kafka_hosts}
 """.format(tmp_dir=config.core.tmp_dir,
