@@ -14,6 +14,7 @@ def _create_cfg_files():
     with open("client.cfg", "w") as fw:
         fw.write("""[core]
 hdfs-tmp-dir: {tmp_dir}
+local-tmp-dir: {tmp_dir}
 [aws]
 access-key-id: {aws_access_key_id}
 secret-access-key: {aws_secret_access_key}
@@ -22,6 +23,8 @@ aws_access_key_id: {aws_access_key_id}
 aws_secret_access_key: {aws_secret_access_key}
 [kafka]
 hosts: {kafka_hosts}
+[postgres]
+local-tmp-dir: {tmp_dir}
 """.format(tmp_dir=config.core.tmp_dir,
            aws_access_key_id=config.aws.access_key_id,
            aws_secret_access_key=config.aws.secret_access_key,
