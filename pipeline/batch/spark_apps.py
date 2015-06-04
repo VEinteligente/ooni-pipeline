@@ -49,8 +49,8 @@ class CountInterestingReports(PySparkTask):
                     "report_id": interesting.report_id,
                     "count": interesting.count
                 })
-                logger.info("Printing")
-                logger.info(data)
+                print("Printing")
+                print(data)
                 out_file.write(data)
                 out_file.write("\n")
 
