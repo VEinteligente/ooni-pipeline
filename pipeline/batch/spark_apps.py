@@ -99,7 +99,7 @@ class InterestingToDB(luigi.postgres.CopyToTable):
         with self.input().open('r') as in_file:
             for line in in_file:
                 logging.info("Parsing %s" % line)
-                record = json_loads(line.strip('\n'))
+                record = json_loads(unicode(line.strip('\n')))
                 logger.info("Adding to DB %s" % (record["report_id"]))
                 yield self.serialize(record)
 
