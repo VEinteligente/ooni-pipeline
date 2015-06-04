@@ -34,7 +34,9 @@ class CountInterestingReports(PySparkTask):
         return get_luigi_target(output_path)
 
     def main(self, sc, *args):
-        df = sc.jsonFile(self.input().path)
+        from pyspark.sql import SQLContext
+        sqlContext = SQLContext(sc)
+        df = sqlContext.jsonFile(self.input().path)
         http_requests = df.filter("test_name = 'http_requests_test' AND record_type = 'entry'")
         interestings = http_requests.filter("body_length_match = false OR headers_match = false").groupBy("report_id")
 
