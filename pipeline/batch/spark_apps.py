@@ -54,7 +54,7 @@ class FindInterestingReports(PySparkTask):
         interestings = self.find_interesting(report_entries)
 
         out_file = self.output().open('w')
-        for interesting in interestings.toJSON():
+        for interesting in interestings.toJSON().collect():
             out_file.write(interesting)
             out_file.write("\n")
         out_file.close()
@@ -91,7 +91,9 @@ class InterestingToDB(luigi.postgres.CopyToTable):
     finder = FindInterestingReports
 
     def requires(self):
-        return self.finder(src=self.src, date=self.date, dst=self.dst)
+        f = self.finder(src=self.src, date=self.date, dst=self.dst)
+        logger.info("Running the finder %s" % f)
+        return f
 
     def rows(self):
         with self.input().open('r') as in_file:
