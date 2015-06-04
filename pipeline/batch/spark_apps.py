@@ -117,7 +117,8 @@ class HTTPRequestsToDB(InterestingToDB):
     finder = HTTPRequestsInterestingFind
 
     def serialize(self, record):
-        return [record.report_id, record.report_filename, record.input]
+        return [record["report_id"], record["report_filename"],
+                record["input"]]
 
 
 class SparkResultsToDatabase(ExternalTask):
