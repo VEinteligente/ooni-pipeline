@@ -55,7 +55,7 @@ class FindInterestingReports(PySparkTask):
         for field in header_avro["fields"] + self.extra_fields:
             if field["type"] == "float":
                 field_type = FloatType()
-            elif field["type"] == "float":
+            elif field["type"] == "bool":
                 field_type = BooleanType()
             else:
                 field_type = StringType()
