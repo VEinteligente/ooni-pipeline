@@ -5,6 +5,7 @@ import os
 import logging
 
 import luigi
+import luigi.postgres
 from luigi.contrib.spark import PySparkTask
 
 from invoke.config import Config
