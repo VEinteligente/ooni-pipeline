@@ -14,7 +14,7 @@ from invoke.config import Config
 from pipeline.helpers.util import json_loads, get_date_interval
 from pipeline.helpers.util import get_luigi_target
 from pipeline.helpers.util import get_imported_dates
-from pipeline.report import header_avro
+from pipeline.helpers.report import header_avro
 
 
 config = Config(runtime_path="invoke.yaml")
