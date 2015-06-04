@@ -84,6 +84,7 @@ class HTTPRequestsInterestingFind(FindInterestingReports):
     extra_fields = [
         {"name": "body_length_match", "type": "bool"},
         {"name": "headers_match", "type": "bool"},
+        {"name": "input", "type": "string"},
     ]
 
     def find_interesting(self, sqlContext):
