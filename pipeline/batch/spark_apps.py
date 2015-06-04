@@ -64,13 +64,8 @@ class FindInterestingReports(PySparkTask):
 
         sqlContext = SQLContext(sc)
         logger.info("Reading %s from %s" % (self.test_name, self.input().path))
-        df = sqlContext.jsonFile(self.input().path)
-        report_entries = df.filter("test_name = '{test_name}'"
-                                   " AND record_type = 'entry'".format(
-                                       test_name=self.test_name))
-
-        schema_entries = sqlContext.createDataFrame(report_entries, schema)
-        schema_entries.registerTempTable("reports")
+        df = sqlContext.jsonFile(self.input().path, schema)
+        df.registerTempTable("reports")
 
         interestings = self.find_interesting(sqlContext)
 
@@ -93,8 +88,11 @@ class HTTPRequestsInterestingFind(FindInterestingReports):
 
     def find_interesting(self, sqlContext):
         return sqlContext.sql("SELECT * from reports WHERE "
-                              " body_length_match = false"
-                              " OR headers_match = false")
+                              " test_name = '{test_name}' AND"
+                              " record_type = 'entry'"
+                              " AND (body_length_match = false"
+                              " OR headers_match = false)".format(
+                                  test_name=self.test_name))
 
 
 class InterestingToDB(luigi.postgres.CopyToTable):
