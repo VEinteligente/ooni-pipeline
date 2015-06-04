@@ -80,6 +80,10 @@ class SparkResultsToDatabase(luigi.postgres.CopyToTable):
 
 def run(date_interval, src="s3n://ooni-public/reports-sanitised/streams/",
         dst="s3n://ooni-public/processed/", worker_processes=16):
+
+    sch = luigi.scheduler.CentralPlannerScheduler()
+    w = luigi.worker.Worker(scheduler=sch,
+                            worker_processes=worker_processes)
     imported_dates = get_imported_dates(src,
                                         aws_access_key_id=config.aws.access_key_id,
                                         aws_secret_access_key=config.aws.secret_access_key)
@@ -90,10 +94,8 @@ def run(date_interval, src="s3n://ooni-public/reports-sanitised/streams/",
 
         logger.info("Running CountInterestingReports for %s on %s to %s" %
                     (date, src, dst))
-        sch = luigi.scheduler.CentralPlannerScheduler()
-        w = luigi.worker.Worker(scheduler=sch,
-                                worker_processes=worker_processes)
         task = SparkResultsToDatabase(src=src, date=date, dst=dst)
         w.add(task)
+
     w.run()
     w.stop()
