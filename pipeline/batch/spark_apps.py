@@ -62,7 +62,7 @@ class SparkResultsToDatabase(luigi.postgres.CopyToTable):
     database = str(config.postgres.database)
     user = str(config.postgres.username)
     password = str(config.postgres.password)
-    table = 'spark-results'
+    table = 'spark_results'
 
     columns = [
         ("report_id", "TEXT"),
