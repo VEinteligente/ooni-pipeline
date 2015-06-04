@@ -98,7 +98,7 @@ class InterestingToDB(luigi.postgres.CopyToTable):
     def rows(self):
         with self.input().open('r') as in_file:
             for line in in_file:
-                record = json_loads(line.strip('\n').decode('utf-8', 'ignore'))
+                record = json_loads(line.decode('utf-8', 'ignore').strip('\n'))
                 logger.info("Adding to DB %s" % (record["report_id"]))
                 yield self.serialize(record)
 
