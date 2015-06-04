@@ -121,12 +121,12 @@ class InterestingToDB(luigi.postgres.CopyToTable):
         with self.input().open('r') as in_file:
             for line in in_file:
                 record = json_loads(line.decode('utf-8', 'ignore').strip('\n'))
-                print(record)
                 logger.info("Adding to DB %s" % (record["report_id"]))
                 yield self.serialize(record)
 
     def serialize(self, record):
-        return [record.report_id, record.report_filename, record.input]
+        return [record.get("report_id"), record.get("report_filename"),
+                record.get("input")]
 
 
 class HTTPRequestsToDB(InterestingToDB):
@@ -141,7 +141,7 @@ class HTTPRequestsToDB(InterestingToDB):
 
     def serialize(self, record):
         return [record["report_id"], record["report_filename"],
-                record["input"]]
+                record.get("input")]
 
 
 class SparkResultsToDatabase(ExternalTask):
