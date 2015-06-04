@@ -56,6 +56,7 @@ class CountInterestingReports(PySparkTask):
 class SparkResultsToDatabase(luigi.postgres.CopyToTable):
     src = luigi.Parameter()
     date = luigi.DateParameter()
+    dst = luigi.Parameter()
 
     host = str(config.postgres.host)
     database = str(config.postgres.database)
@@ -69,7 +70,7 @@ class SparkResultsToDatabase(luigi.postgres.CopyToTable):
     ]
 
     def requires(self):
-        return CountInterestingReports(src=self.src, date=self.date)
+        return CountInterestingReports(src=self.src, date=self.date, dst=self.dst)
 
     def rows(self):
         with self.input().open('r') as in_file:
