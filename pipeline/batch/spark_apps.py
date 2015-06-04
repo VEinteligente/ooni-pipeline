@@ -108,6 +108,9 @@ class InterestingToDB(luigi.postgres.CopyToTable):
         ("report_id", "TEXT"),
         ("report_filename", "TEXT"),
         ("input", "TEXT"),
+        ("probe_cc", "TEXT"),
+        ("probe_asn", "TEXT"),
+        ("start_time", "FLOAT")
     ]
 
     finder = FindInterestingReports
@@ -126,22 +129,14 @@ class InterestingToDB(luigi.postgres.CopyToTable):
 
     def serialize(self, record):
         return [record.get("report_id"), record.get("report_filename"),
-                record.get("input")]
+                record.get("input"), record.get("probe_cc"),
+                record.get("probe_asn"), record.get("start_time")]
 
 
 class HTTPRequestsToDB(InterestingToDB):
     table = 'http_requests_interesting'
 
-    columns = [
-        ("report_id", "TEXT"),
-        ("report_filename", "TEXT"),
-        ("input", "TEXT")
-    ]
     finder = HTTPRequestsInterestingFind
-
-    def serialize(self, record):
-        return [record["report_id"], record["report_filename"],
-                record.get("input")]
 
 
 class SparkResultsToDatabase(ExternalTask):
