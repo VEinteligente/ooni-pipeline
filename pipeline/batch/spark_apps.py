@@ -123,7 +123,7 @@ class SparkResultsToDatabase(ExternalTask):
     date = luigi.DateParameter()
     dst = luigi.Parameter()
 
-    def requires(self):
+    def run(self):
         logger.info("Running HTTPRequestsToDB for date %s" % self.date)
         yield HTTPRequestsToDB(src=self.src, date=self.date, dst=self.dst)
 
