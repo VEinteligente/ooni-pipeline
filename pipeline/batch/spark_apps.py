@@ -3,6 +3,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import os
 import logging
+from datetime import datetime, timedelta
 
 import luigi
 import luigi.postgres
@@ -114,16 +115,33 @@ class InterestingToDB(luigi.postgres.CopyToTable):
     password = str(config.postgres.password)
     table = 'spark_results'
 
-    columns = [
+    @property
+    def columns(self):
+        return self.base_columns + self.extra_columns
+
+    base_columns = [
         ("report_id", "TEXT"),
         ("report_filename", "TEXT"),
-        ("input", "TEXT"),
         ("probe_cc", "TEXT"),
         ("probe_asn", "TEXT"),
         ("start_time", "FLOAT")
     ]
 
+    extra_columns = []
+
     finder = FindInterestingReports
+
+    def init_copy(self, connection):
+        epoch = datetime.utcfromtimestamp(0)
+        start_range = (self.date - epoch).total_seconds()
+        end_range = (self.date - epoch + timedelta(days=1)).total_seconds()
+        query = ("DELETE FROM {table} WHERE start_time <= {end_range} "
+                 "AND start_time >= {start_range}").format(
+                     table=self.table,
+                     start_range=start_range,
+                     end_range=end_range
+                 )
+        connection.cursor().execute(query)
 
     def requires(self):
         f = self.finder(src=self.src, date=self.date, dst=self.dst)
@@ -138,12 +156,19 @@ class InterestingToDB(luigi.postgres.CopyToTable):
                 yield self.serialize(record)
 
     def serialize(self, record):
-        return [record.get("report_id"), record.get("report_filename"),
-                record.get("input"), record.get("probe_cc"),
-                record.get("probe_asn"), record.get("start_time")]
+        serialized = []
+        for column in self.columns:
+            serialized.append(record.get(column[0]))
+        return serialized
 
 
 class HTTPRequestsToDB(InterestingToDB):
+    extra_columns = [
+        ("body_length_match", "BOOL"),
+        ("headers_match", "BOOL"),
+        ("input", "TEXT")
+    ]
+
     table = 'http_requests_interesting'
 
     finder = HTTPRequestsInterestingFind
@@ -183,4 +208,3 @@ def run(date_interval, src="s3n://ooni-public/reports-sanitised/streams/",
         w.add(task, multiprocess=True)
 
     w.run()
-    w.stop()
