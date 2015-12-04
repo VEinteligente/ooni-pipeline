@@ -43,9 +43,9 @@ class FindInterestingReports(PySparkTask):
 
     def output(self):
         output_path = os.path.join(self.dst,
-                                   self.date.year,
-                                   self.date.month,
-                                   self.date.day,
+                                   str(self.date.year),
+                                   str(self.date.month),
+                                   str(self.date.day),
                                    "interesting-{software_name}-{test_name}"
                                    ".json".format(
                                        test_name=self.test_name,
@@ -183,9 +183,9 @@ class SparkResultsToDatabase(ExternalTask):
 
     def output(self):
         output_path = os.path.join(self.dst,
-                                   self.date.year,
-                                   self.date.month,
-                                   self.date.day,
+                                   str(self.date.year),
+                                   str(self.date.month),
+                                   str(self.date.day),
                                    "spark-results.json")
         return get_luigi_target(output_path)
 
