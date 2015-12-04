@@ -199,6 +199,26 @@ def clean_streams(ctx, dst_private="s3n://ooni-private/",
         target.remove()
 
 @task(setup_remote_syslog)
+def clean_interesting(ctx, date_interval, test_name="http_requests",
+                      software_name="ooniprobe",
+                      dst_public="s3n://ooni-public/"):
+
+    from pipeline.helpers.util import get_date_interval
+    from pipeline.helpers.util import get_luigi_target
+    for date in get_date_interval(date_interval):
+        path = os.path.join(dst_public,
+                     "processed",
+                     "{software_name}-{test_name}-interesting-{date}.json".format(
+                            software_name=software_name,
+                            test_name=test_name,
+                            date=date
+                     ))
+        target = get_luigi_target(path)
+        logger.info("deleting %s" % path)
+        target.remove()
+
+
+@task(setup_remote_syslog)
 def add_headers_to_db(ctx, date_interval=None, workers=16,
                       src="s3n://ooni-private/reports-raw/yaml/",
                       dst_private="s3n://ooni-private/",
@@ -301,4 +321,5 @@ def spark_apps(ctx, date_interval, src="s3n://ooni-public/reports-sanitised/stre
 
 
 ns = Collection(upload_reports, generate_streams, list_reports, clean_streams,
-                add_headers_to_db, start_computer, sync_reports, spark_apps, spark_submit)
+                add_headers_to_db, start_computer, sync_reports, spark_apps,
+                spark_submit, clean_interesting)
