@@ -43,9 +43,11 @@ class FindInterestingReports(PySparkTask):
 
     def output(self):
         output_path = os.path.join(self.dst,
-                                   "{software_name}-{test_name}"
-                                   "-interesting-{date}.json".format(
-                                       date=self.date,
+                                   self.date.year,
+                                   self.date.month,
+                                   self.date.day,
+                                   "interesting-{software_name}-{test_name}"
+                                   ".json".format(
                                        test_name=self.test_name,
                                        software_name=self.software_name))
         return get_luigi_target(output_path)

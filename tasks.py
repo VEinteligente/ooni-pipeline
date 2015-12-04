@@ -199,23 +199,14 @@ def clean_streams(ctx, dst_private="s3n://ooni-private/",
         target.remove()
 
 @task(setup_remote_syslog)
-def clean_interesting(ctx, date_interval, test_name="http_requests",
-                      software_name="ooniprobe",
+def clean_interesting(ctx, year,
                       dst_public="s3n://ooni-public/"):
 
-    from pipeline.helpers.util import get_date_interval
     from pipeline.helpers.util import get_luigi_target
-    for date in get_date_interval(date_interval):
-        path = os.path.join(dst_public,
-                     "processed",
-                     "{software_name}-{test_name}-interesting-{date}.json".format(
-                            software_name=software_name,
-                            test_name=test_name,
-                            date=date
-                     ))
-        target = get_luigi_target(path)
-        logger.info("deleting %s" % path)
-        target.remove()
+    path = os.path.join(dst_public, "processed", year)
+    target = get_luigi_target(path)
+    logger.info("deleting %s" % path)
+    target.remove()
 
 
 @task(setup_remote_syslog)
