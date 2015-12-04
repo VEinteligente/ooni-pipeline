@@ -300,7 +300,7 @@ def spark_submit(ctx, script,
     logger.info("spark_submit runtime: %s" % timer.stop())
 
 
-@task(setup_remote_syslog)
+@task
 def spark_apps(ctx, date_interval, src="s3n://ooni-public/reports-sanitised/streams/",
                dst="s3n://ooni-public/processed/", workers=3):
     timer = Timer()
