@@ -133,8 +133,9 @@ class InterestingToDB(luigi.postgres.CopyToTable):
 
     finder = FindInterestingReports
 
-    def init_copy(self, connection):
+    def _disabled_init_copy(self, connection):
         epoch = datetime.utcfromtimestamp(0)
+        # This does not work.
         start_range = (self.date - epoch).total_seconds()
         end_range = (self.date - epoch + timedelta(days=1)).total_seconds()
         query = ("DELETE FROM {table} WHERE start_time <= {end_range} "
