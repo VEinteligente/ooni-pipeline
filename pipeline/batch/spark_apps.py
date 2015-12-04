@@ -181,6 +181,14 @@ class SparkResultsToDatabase(ExternalTask):
     date = luigi.DateParameter()
     dst = luigi.Parameter()
 
+    def output(self):
+        output_path = os.path.join(self.dst,
+                                   self.date.year,
+                                   self.date.month,
+                                   self.date.day,
+                                   "spark-results.json")
+        return get_luigi_target(output_path)
+
     def run(self):
         logger.info("Running HTTPRequestsToDB for date %s" % self.date)
         yield HTTPRequestsToDB(src=self.src, date=self.date, dst=self.dst)
