@@ -98,7 +98,7 @@ class AggregateYAMLReports(ExternalTask):
         sanitised_streams.close()
 
 
-class RawReportsSanitiser(luigi.Task):
+class RangeAggregateYAMLReports(luigi.Task):
     src = luigi.Parameter()
     dst_private = luigi.Parameter()
     dst_public = luigi.Parameter()

@@ -10,31 +10,21 @@ import luigi
 import luigi.worker
 import luigi.hdfs
 from luigi.task import ExternalTask
-from luigi.format import GzipFormat
-from luigi.s3 import S3Target
-from luigi.file import LocalTarget
+from luigi.configuration import get_config
 
-from invoke.config import Config
+from pipeline.helpers.util import list_report_files, get_luigi_target
 
-from pipeline.helpers.util import list_report_files
-
-config = Config(runtime_path="invoke.yaml")
-logger = logging.getLogger('ooni-pipeline')
+config = get_config()
+logger = logging.getLogger('luigi-interface')
 
 
 class ReportSource(ExternalTask):
     src = luigi.Parameter()
 
     def output(self):
-        file_format = None
-        if self.src.endswith(".gz"):
-            file_format = GzipFormat()
-        if self.src.startswith("s3n://"):
-            return S3Target(self.src, format=file_format)
-        return LocalTarget(self.src, format=file_format)
+        return get_luigi_target(self.src)
 
-
-class S3CopyRawReport(luigi.Task):
+class ImportRawReport(luigi.Task):
     src = luigi.Parameter()
     dst = luigi.Parameter()
     move = luigi.Parameter()
@@ -72,11 +62,15 @@ class S3CopyRawReport(luigi.Task):
                 df_version="v1",
                 ext=ext.replace(".gz", "").replace(".yamloo", ".yaml")
             )
-            uri = os.path.join(self.dst, date.strftime("%Y-%m-%d"), filename)
-            return S3Target(uri)
-        except Exception:
-            return S3Target(os.path.join(self.dst, "failed",
-                                         os.path.basename(self.src)))
+            uri = os.path.join(self.dst, date.strftime("%Y"),
+                               date.strftime("%m-%d"), filename)
+            return get_luigi_target(uri)
+        except Exception as exc:
+            logger.error(exc)
+            logger.error("Failed to import %s" % self.src)
+            failed_uri = os.path.join(self.dst, "failed",
+                                      os.path.basename(self.src))
+            return get_luigi_target(failed_uri)
 
     def run(self):
         input = self.input()
@@ -88,6 +82,20 @@ class S3CopyRawReport(luigi.Task):
             input.remove()
 
 
+class ImportRawReportDirectory(luigi.Task):
+    src_dir = luigi.Parameter()
+    dst = luigi.Parameter()
+    move = luigi.Parameter(default=False)
+
+    def requires(self):
+        return [
+            ImportRawReport(filename, self.dst, self.move)
+                    for filename in list_report_files(self.src_dir,
+                                                      aws_access_key_id=config.get('aws', 'access-key-id'),
+                                                      aws_secret_access_key=config.get('aws', 'secret-access-key')
+                                                      )
+                ]
+
 def run(src_directory, dst, worker_processes, limit=None, move=False):
     sch = luigi.scheduler.CentralPlannerScheduler()
     idx = 0
@@ -96,13 +104,13 @@ def run(src_directory, dst, worker_processes, limit=None, move=False):
 
     uploaded_files = []
     for filename in list_report_files(
-        src_directory, aws_access_key_id=config.aws.access_key_id,
-            aws_secret_access_key=config.aws.secret_access_key):
+        src_directory, aws_access_key_id=config.get('aws', 'access_key_id'),
+            aws_secret_access_key=config('aws', 'secret_access_key')):
         if limit is not None and idx >= limit:
             break
         idx += 1
         logging.info("uploading %s" % filename)
-        task = S3CopyRawReport(src=filename, dst=dst, move=move)
+        task = ImportRawReport(src=filename, dst=dst, move=move)
         uploaded_files.append(task.output().path)
         w.add(task, multiprocess=True)
     w.run()
