@@ -1,0 +1,5 @@
+#!/bin/bash
+source {{ ansible_env.HOME }}/virtualenvs/{{virtualenv_name}}/bin/activate
+cd {{ ansible_env.HOME }}/ooni-pipeline-ng/
+echo "Started daily task" > ooni-pipeline.log
+invoke sync_reports

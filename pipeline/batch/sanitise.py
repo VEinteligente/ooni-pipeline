@@ -7,15 +7,14 @@ import luigi
 import luigi.worker
 import luigi.hdfs
 from luigi.task import ExternalTask
-
-from invoke.config import Config
+from luigi.configuration import get_config
 
 from pipeline.helpers.report import Report
 from pipeline.helpers.util import json_dumps, yaml_dump, get_date_interval
 from pipeline.helpers.util import list_report_files, get_luigi_target
 
-config = Config(runtime_path="invoke.yaml")
-logger = logging.getLogger('ooni-pipeline')
+config = get_config()
+logger = logging.getLogger('luigi-interface')
 
 
 class AggregateYAMLReports(ExternalTask):
@@ -53,7 +52,8 @@ class AggregateYAMLReports(ExternalTask):
             self.dst_public,
             "reports-sanitised",
             "yaml",
-            self.date.strftime("%Y-%m-%d"),
+            self.date.strftime("%Y"),
+            self.date.strftime("%m-%d"),
             sanitised_yaml_filename
         )).open('w')
         logger.info("Sanitising %s" % filename)
@@ -75,19 +75,25 @@ class AggregateYAMLReports(ExternalTask):
         sanitised_yaml.close()
 
     def run(self):
-        with get_luigi_target(config.ooni.bridge_db_path).open('r') as f:
-            self.bridge_db = json.load(f)
+        bridge_db_path = config.get('ooni', 'bridge-db-path', None)
+        if bridge_db_path:
+            with get_luigi_target(bridge_db_path).open('r') as f:
+                self.bridge_db = json.load(f)
+        else:
+            logger.warning("Will not sanitise bridge_reachability reports!")
+            self.bridge_db = None
 
         output = self.output()
         raw_streams = output["raw_streams"].open('w')
         sanitised_streams = output["sanitised_streams"].open('w')
 
         reports_path = os.path.join(self.src,
-                                    self.date.strftime("%Y-%m-%d"))
+                                    self.date.strftime("%Y"),
+                                    self.date.strftime("%m-%d"))
         logger.debug("listing path %s" % reports_path)
         for filename in list_report_files(reports_path,
-                                          config.aws.access_key_id,
-                                          config.aws.secret_access_key):
+                                          config.get('aws', 'access-key-id'),
+                                          config.get('aws', 'secret-access-key')):
             logger.debug("got filename %s" % filename)
             try:
                 self.process_report(filename, sanitised_streams, raw_streams)

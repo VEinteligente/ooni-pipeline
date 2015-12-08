@@ -1,9 +1,7 @@
-from .batch.sanitise import AggregateYAMLReports, RangeAggregateYAMLReports
-from .batch.upload_reports import ImportRawReportDirectory
+from .batch.full_db_import import YAMLReportFileToDatabase
+from .batch.full_db_import import ImportYAMLReportFromDateRange
 
 __all__ = [
-    "AggregateYAMLReports",
-    "RangeAggregateYAMLReports",
-    "ImportRawReport",
-    "ImportRawReportDirectory"
+    "YAMLReportFileToDatabase",
+    "ImportYAMLReportFromDateRange"
 ]

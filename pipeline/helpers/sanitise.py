@@ -30,7 +30,7 @@ class Sanitisers(object):
         return entry
 
     def bridge_reachability_tcp_connect(self, entry):
-        if entry['input'] and entry['input'].strip() in self.bridge_db.keys():
+        if self.bridge_db and entry['input'] and entry['input'].strip() in self.bridge_db.keys():
             b = self.bridge_db[entry['input'].strip()]
             fingerprint = b['fingerprint'].decode('hex')
             hashed_fingerprint = hashlib.sha1(fingerprint).hexdigest()
@@ -43,7 +43,7 @@ class Sanitisers(object):
         if not entry.get('bridge_address'):
             entry['bridge_address'] = entry['input']
 
-        if entry['bridge_address'] and \
+        if self.bridge_db and entry['bridge_address'] and \
                 entry['bridge_address'].strip() in self.bridge_db:
             b = self.bridge_db[entry['bridge_address'].strip()]
             entry['distributor'] = b['distributor']
@@ -149,17 +149,6 @@ def get_sanitisers(test_name):
 
 
 def run(test_name, entry, bridge_db=None):
-    if bridge_db is None:
-        try:
-            from pipeline.helpers.settings import bridge_db_mapping
-            bridge_db = bridge_db_mapping
-        except ImportError:
-            raise ValueError(
-                "You must either pass bridge_db or copy"
-                " pipeline/helpers/settings.example.py to"
-                " pipeline/helpers/settings.py and configure it"
-            )
-
     sanitisers = Sanitisers(bridge_db)
     test_sanitisers = get_sanitisers(test_name)
     if test_sanitisers in (False, None):

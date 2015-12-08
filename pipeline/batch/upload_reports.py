@@ -9,7 +9,6 @@ from dateutil.parser import parse as date_parse
 import luigi
 import luigi.worker
 import luigi.hdfs
-from luigi.task import ExternalTask
 from luigi.configuration import get_config
 
 from pipeline.helpers.util import list_report_files, get_luigi_target
@@ -18,19 +17,13 @@ config = get_config()
 logger = logging.getLogger('luigi-interface')
 
 
-class ReportSource(ExternalTask):
-    src = luigi.Parameter()
-
-    def output(self):
-        return get_luigi_target(self.src)
-
 class ImportRawReport(luigi.Task):
     src = luigi.Parameter()
     dst = luigi.Parameter()
-    move = luigi.Parameter()
+    move = luigi.BoolParameter()
 
-    def requires(self):
-        return ReportSource(self.src)
+    def input(self):
+        return get_luigi_target(self.src)
 
     def output(self):
         try:
@@ -83,41 +76,24 @@ class ImportRawReport(luigi.Task):
 
 
 class ImportRawReportDirectory(luigi.Task):
-    src_dir = luigi.Parameter()
-    dst = luigi.Parameter()
-    move = luigi.Parameter(default=False)
+    incoming_dir = luigi.Parameter()
+    private_dir = luigi.Parameter()
+    move = luigi.BoolParameter(default=False)
 
-    def requires(self):
-        return [
-            ImportRawReport(filename, self.dst, self.move)
-                    for filename in list_report_files(self.src_dir,
-                                                      aws_access_key_id=config.get('aws', 'access-key-id'),
-                                                      aws_secret_access_key=config.get('aws', 'secret-access-key')
-                                                      )
-                ]
+    def output(self):
+        uri = os.path.join(self.private_dir, 'import.log')
+        return get_luigi_target(uri)
 
-def run(src_directory, dst, worker_processes, limit=None, move=False):
-    sch = luigi.scheduler.CentralPlannerScheduler()
-    idx = 0
-    w = luigi.worker.Worker(scheduler=sch,
-                            worker_processes=worker_processes)
-
-    uploaded_files = []
-    for filename in list_report_files(
-        src_directory, aws_access_key_id=config.get('aws', 'access_key_id'),
-            aws_secret_access_key=config('aws', 'secret_access_key')):
-        if limit is not None and idx >= limit:
-            break
-        idx += 1
-        logging.info("uploading %s" % filename)
-        task = ImportRawReport(src=filename, dst=dst, move=move)
-        uploaded_files.append(task.output().path)
-        w.add(task, multiprocess=True)
-    w.run()
-    w.stop()
-    uploaded_dates = []
-    for uploaded_file in uploaded_files:
-        uploaded_date = os.path.basename(os.path.dirname(uploaded_file))
-        if uploaded_date not in uploaded_dates:
-            uploaded_dates.append(uploaded_date)
-    return uploaded_dates
+    def run(self):
+        output = self.output()
+        out_file = output.open('w')
+        for filename in list_report_files(self.incoming_dir,
+                                          aws_access_key_id=config.get('aws', 'access-key-id'),
+                                          aws_secret_access_key=config.get('aws', 'secret-access-key')):
+            t = ImportRawReport(filename, os.path.join(self.private_dir,
+                                                       'reports-raw',
+                                                       'yaml'), self.move)
+            #imported_date = '-'.join(path.split('/')[-3:-1])
+            yield t
+            out_file.write("%s\n" % t.output().path)
+        out_file.close()

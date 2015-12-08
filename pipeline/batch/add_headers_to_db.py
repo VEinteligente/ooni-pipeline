@@ -1,19 +1,18 @@
 import logging
-import json
 
 import luigi
 import luigi.worker
 import luigi.postgres
 
-from invoke.config import Config
+from luigi.configuration import get_config
 
-from pipeline.helpers.util import json_loads, get_date_interval, get_luigi_target
+from pipeline.helpers.util import json_loads, get_date_interval
 from pipeline.helpers.util import get_imported_dates
 from pipeline.helpers.report import header_avro
 
 from pipeline.batch.sanitise import AggregateYAMLReports
 
-config = Config(runtime_path="invoke.yaml")
+config = get_config()
 logger = logging.getLogger('ooni-pipeline')
 
 columns = []
@@ -32,11 +31,11 @@ class ReportHeadersToDatabase(luigi.postgres.CopyToTable):
 
     date = luigi.DateParameter()
 
-    host = str(config.postgres.host)
-    database = str(config.postgres.database)
-    user = str(config.postgres.username)
-    password = str(config.postgres.password)
-    table = str(config.postgres.table)
+    host = str(config.get('postgres', 'host'))
+    database = str(config.get('postgres', 'database'))
+    user = str(config.get('postgres','username'))
+    password = str(config.get('postgres','password'))
+    table = str(config.get('postgres','table'))
 
     columns = columns
 
