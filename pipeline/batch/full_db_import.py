@@ -90,6 +90,7 @@ class YAMLReportFileToDatabase(luigi.postgres.CopyToTable):
         self.get_bridge_db()
         try:
             for entry in self.process_report(self.report_filename):
+                logger.info(entry)
                 yield self.format_entry(entry)
         except Exception:
             logger.error("error in processing %s" % self.report_filename)
@@ -97,14 +98,12 @@ class YAMLReportFileToDatabase(luigi.postgres.CopyToTable):
 
 class ImportYAMLReportFromDateRange(luigi.ExternalTask):
     date_interval = luigi.DateIntervalParameter()
-    private_dir = luigi.Parameter()
+    raw_reports_dir = luigi.Parameter()
 
     def run(self):
         for date in self.date_interval:
             directory = os.path.join(
-                self.private_dir,
-                'reports-raw',
-                'yaml',
+                self.raw_reports_dir,
                 date.strftime("%Y-%m-%d")
             )
             logger.info("Listing directory %s" % directory)
