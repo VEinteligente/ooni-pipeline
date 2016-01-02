@@ -142,8 +142,6 @@ class YAMLReport(object):
         if 'report' in entry:
             entry.update(entry.pop('report'))
         entry.update(self.header)
-        if test_name_mappings.get(entry['test_name']) is not None:
-            entry['test_name'] = test_name_mappings[entry['test_name']]
         return entry
 
     def entries(self):
@@ -176,6 +174,9 @@ class YAMLReport(object):
     def process_header(self, report):
         try:
             self._raw_header = report.next()
+            test_name = test_name_mappings.get(self._raw_header['test_name'])
+            if test_name is not None:
+                self._raw_header['test_name'] = test_name
         except StopIteration:
             return
 
