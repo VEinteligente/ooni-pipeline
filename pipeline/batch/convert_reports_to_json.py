@@ -26,6 +26,8 @@ def convert_report(report_filename, dst_directory, fail_log="fail.log"):
                 output_filename
             )
             output_target = get_luigi_target(output_path)
+            if output_target.exists():
+                return
             out_file = output_target.open('w')
             for entry in report.entries():
                 out_file.write(json_dumps(entry))
