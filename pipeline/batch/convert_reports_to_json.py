@@ -11,7 +11,7 @@ from pipeline.helpers.report import JSONReport
 def convert_report(report_filename, dst_directory, fail_log="fail.log"):
     try:
         input_target = get_luigi_target(report_filename)
-        print("Converting %s" % report_filename)
+        print("[.] Converting %s" % report_filename)
         with input_target.open('r') as in_file:
             report = JSONReport(in_file, report_filename)
             output_filename = "{date}-{asn}-{test_name}-{df_version}-{ext}".format(
@@ -34,6 +34,7 @@ def convert_report(report_filename, dst_directory, fail_log="fail.log"):
                 out_file.write(json_dumps(entry))
                 out_file.write("\n")
             out_file.close()
+            print("[x] Written %s" % output_path)
     except Exception:
         with open(fail_log, "a+") as fw:
             fail_log_entry = {

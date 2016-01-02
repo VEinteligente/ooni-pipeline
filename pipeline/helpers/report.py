@@ -61,6 +61,7 @@ test_name_mappings = {
     "tcp_connect": "tcp_connect",
 
     "DNS tamper": "dns_consistency",
+    "dnstamper": "dns_consistency",
     "dns_consistency": "dns_consistency",
 
     "HTTP Invalid Request Line": "http_invalid_request_line",
@@ -84,6 +85,7 @@ test_name_mappings = {
 
     "HTTPFilteringBypass": "http_filtering_bypass",
     "HTTPTrix": "http_trix",
+    "httptrix": "http_trix",
     "http_test": None,
     "http_url_list": None,
     "dns_spoof": None,
