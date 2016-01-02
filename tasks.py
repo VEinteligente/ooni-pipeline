@@ -1,9 +1,5 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
-from datetime import datetime
-import json
-import traceback
-import sys
 import os
 #from functools import wraps
 
@@ -17,16 +13,6 @@ logger = setup_pipeline_logging(config)
 
 os.environ["PYTHONPATH"] = os.environ.get("PYTHONPATH") if os.environ.get("PYTHONPATH") else ""
 os.environ["PYTHONPATH"] = ":".join(os.environ["PYTHONPATH"].split(":") + [config.core.ooni_pipeline_path])
-
-#def with_timer(func_to_wrap):
-#    @wraps(func_to_wrap)
-#    def func_wrapper(*args, **kwargs):
-#        logger.info("Starting task %s" % self.__name__)
-#        timer = Timer()
-#        timer.start()
-#        func_to_wrap(*args, **kwargs)
-#        logger.info("Finished task at %s" % timer.stop())
-#    return func_wrapper
 
 def _create_cfg_files():
     with open("client.cfg", "w") as fw:
@@ -154,27 +140,11 @@ def bins_to_sanitised_streams(ctx, date_interval,
                                   workers=workers)
 
 @task
-def spark_submit(ctx, script,
-                 spark_submit="/home/hadoop/spark/bin/spark-submit"):
-    timer = Timer()
-    timer.start()
-    ctx.run("{spark_submit} {script}".format(
-        spark_submit=spark_submit,
-        script=script
-    ))
-    logger.info("spark_submit runtime: %s" % timer.stop())
-
-
-@task
-def spark_apps(ctx, date_interval, src="s3n://ooni-public/reports-sanitised/streams/",
-               dst="s3n://ooni-public/processed/", workers=3):
-    timer = Timer()
-    timer.start()
-    from pipeline.batch import spark_apps
-    logger.info("Running spark apps")
-    spark_apps.run(date_interval=date_interval, src=src, dst=dst, worker_processes=workers)
-    logger.info("spark_submit runtime: %s" % timer.stop())
-
+def convert_reports_to_json(ctx, src_directory, dst_directory, fail_log, workers=8):
+    from pipeline.batch import convert_reports_to_json
+    convert_reports_to_json.run(src_directory=src_directory,
+                                dst_directory=dst_directory, fail_log=fail_log,
+                                workers=workers)
 
 ns = Collection(move_and_bin_reports, generate_streams, list_reports, clean_streams,
-                spark_apps, spark_submit, bins_to_sanitised_streams, streams_to_db)
+                bins_to_sanitised_streams, streams_to_db, convert_reports_to_json)

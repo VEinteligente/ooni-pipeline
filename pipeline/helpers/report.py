@@ -1,11 +1,15 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import os
+import sys
 import time
 import random
 import string
 import logging
 import traceback
+
+from base64 import b64encode
+
 from datetime import datetime
 
 import yaml
@@ -18,75 +22,6 @@ yaml.SafeLoader.add_constructor(u'tag:yaml.org,2002:map', construct_yaml_map)
 from pipeline.helpers import sanitise
 
 logger = logging.getLogger('ooni-pipeline')
-
-mappings = {
-    "http_host": ["http_template", "http_host"],
-    "HTTP Host": ["http_template", "http_host"],
-
-    "http_requests_test": ["http_template",
-                           "http_requests"],
-    "http_requests": ["http_template", "http_requests"],
-    "HTTP Requests Test": ["http_template",
-                           "http_requests"],
-
-    "bridge_reachability": ["bridge_reachability"],
-    "bridgereachability": ["bridge_reachability"],
-
-    "TCP Connect": ["tcp_connect"],
-    "tcp_connect": ["tcp_connect"],
-
-    "DNS tamper": ["dns_template", "dns_consistency"],
-    "dns_consistency": ["dns_template", "dns_consistency"],
-
-    "HTTP Invalid Request Line": ["tcp_connect", "http_invalid_request_line"],
-    "http_invalid_request_line": ["tcp_connect", "http_invalid_request_line"],
-
-    "http_header_field_manipulation": ["http_header_field_manipulation"],
-    "HTTP Header Field Manipulation": ["http_header_field_manipulation"],
-
-    "Multi Protocol Traceroute Test": ["scapy_template", "multi_protocol_traceroute"],
-    "multi_protocol_traceroute_test": ["scapy_template", "multi_protocol_traceroute"],
-    "traceroute": ["scapy_template", "multi_protocol_traceroute"],
-
-    "parasitic_traceroute_test": ["scapy_template"],
-
-    "tls-handshake": ["tls_handshake"],
-
-    "dns_injection": ["scapy_template", "dns_injection"],
-
-    "captivep": ["captive_portal"],
-    "captiveportal": ["captive_portal"],
-
-    # These are ignored as we don't yet have analytics for them
-    "HTTPFilteringBypass": False,
-    "HTTPTrix": False,
-    "http_test": False,
-    "http_url_list": False,
-    "dns_spoof": False,
-    "netalyzrwrapper": False,
-
-    # These are ignored because not code for them is available
-    "tor_http_requests_test": False,
-    "sip_requests_test": False,
-    "tor_exit_ip_test": False,
-    "website_probe": False,
-    "base_tcp_test": False,
-
-    # These are ignored because they are invalid reports
-    "summary": False,
-    "test_get": False,
-    "test_put": False,
-    "test_post": False,
-    "this_test_is_nameless": False,
-    "test_send_host_header": False,
-    "test_random_big_request_method": False,
-    "test_get_random_capitalization": False,
-    "test_put_random_capitalization": False,
-    "test_post_random_capitalization": False,
-    "test_random_invalid_field_count": False,
-    "keyword_filtering_detection_based_on_rst_packets": False
-}
-
 
 header_avro = {
     "type": "record",
@@ -111,17 +46,135 @@ header_avro = {
     ]
 }
 
-class Report(object):
-    def __init__(self, in_file, bridge_db, path):
-        self.bridge_db = bridge_db
+class YAMLReport(object):
+    def __init__(self, in_file, path):
         self._start_time = time.time()
         self._end_time = None
         self._skipped_line = 0
 
         self.in_file = in_file
+        self.path = path
         self.filename = os.path.basename(path)
         self._report = yaml.safe_load_all(self.in_file)
         self.process_header(self._report)
+
+    def _restart_from_line(self, line_number):
+        """
+        This is used to skip to the specified line number in case of YAML
+        parsing erorrs. We also add to self._skipped_line since the YAML parsed
+        will consider the line count as relative to the start of the document.
+        """
+        self._skipped_line = line_number+self._skipped_line+1
+        self.in_file.seek(0)
+        for _ in xrange(self._skipped_line):
+            self.in_file.readline()
+        self._report = yaml.safe_load_all(self.in_file)
+
+    def process_entry(self, entry):
+        if 'report' in entry:
+            entry.update(entry.pop('report'))
+        entry.update(self.header)
+        return entry
+
+    def entries(self):
+        while True:
+            try:
+                entry = self._report.next()
+                if not entry:
+                    continue
+                yield self.process_entry(entry)
+            except StopIteration:
+                break
+            except Exception as exc:
+                if hasattr(exc, 'problem_mark'):
+                    self._restart_from_line(exc.problem_mark.line)
+                else:
+                    self._end_time = time.time()
+                    print("failed to process the entry for %s" % self.filename)
+                    print(traceback.format_exc())
+                    raise exc
+                continue
+        self._end_time = time.time()
+
+    @property
+    def header(self):
+        return self._raw_header
+
+    def get_filename(self):
+        return self.filename
+
+    def process_header(self, report):
+        try:
+            self._raw_header = report.next()
+        except StopIteration:
+            return
+
+        self.report_date = datetime.fromtimestamp(self._raw_header["start_time"])
+        date = self.report_date.strftime("%Y-%m-%d")
+        if not self._raw_header.get("report_id"):
+            nonce = ''.join(random.choice(string.ascii_lowercase)
+                            for x in xrange(40))
+            self._raw_header["report_id"] = date + nonce
+
+        self._raw_header["report_filename"] = self.get_filename()
+
+class JSONReport(YAMLReport):
+    def base64_binary_data(self, entry):
+        def is_binary(s):
+            PY3 = sys.version_info[0] == 3
+            int2byte = (lambda x: bytes((x,))) if PY3 else chr
+
+            text_characters = "".join(map(chr, range(32, 127)) + list("\n\r\t\b"))
+
+            if b'\x00' in s:
+                return True
+            elif not s:
+                return False
+
+            t = s.translate(None, str(text_characters))
+
+            # If more than 30% non-text characters, then
+            # we consider it to be binary
+            if float(len(t))/len(s) > 0.30:
+                return True
+            return False
+
+        def fix_function(data):
+            if isinstance(data, str):
+                if is_binary(data):
+                    return {
+                        "data": b64encode(data),
+                        "encoding": "base64"
+                    }
+            return data
+
+        def traverse_and_fix(data):
+            if isinstance(data, dict):
+                new = data.copy()
+                for k, v in data.copy().items():
+                    if not isinstance(k, str):
+                        k = str(k)
+                    new[k] = traverse_and_fix(v)
+                return new
+            elif isinstance(data, list):
+                new = []
+                for item in data:
+                    new.append(traverse_and_fix(item))
+                return new
+            else:
+                return fix_function(data)
+
+        return traverse_and_fix(entry)
+
+    def process_entry(self, entry):
+        entry = YAMLReport.process_entry(self, entry)
+        entry = self.base64_binary_data(entry)
+        return entry
+
+class SanitisedReport(YAMLReport):
+    def __init__(self, in_file, bridge_db, path):
+        self.bridge_db = bridge_db
+        super(SanitisedReport, self).__init__(in_file, path)
 
     def entries(self):
         yield self.header['sanitised'], self.header['raw']
@@ -129,41 +182,12 @@ class Report(object):
             yield sanitised_report, raw_report
         yield self.footer['sanitised'], self.footer['raw']
 
-    def sanitise_header(self, entry):
-        return entry
-
-    @property
-    def header(self):
-        return {
-            "raw": self._raw_header,
-            "sanitised": self._sanitised_header
-        }
-
-    def process_header(self, report):
-        try:
-            self._raw_header = report.next()
-        except StopIteration:
-            return
-        self._raw_header["record_type"] = "header"
-        self._raw_header["report_filename"] = self.filename
-
-        date = datetime.fromtimestamp(self._raw_header["start_time"])
-        date = date.strftime("%Y-%m-%d")
-        if not self._raw_header.get("report_id"):
-            nonce = ''.join(random.choice(string.ascii_lowercase)
-                            for x in xrange(40))
-            self._raw_header["report_id"] = date + nonce
-
-        header_entry = self._raw_header.copy()
-
-        self._sanitised_header = self.sanitise_header(header_entry)
-
     def sanitise_entry(self, entry):
         # XXX we probably want to ignore these sorts of tests
-        if not self._sanitised_header.get('test_name'):
+        if not self.header.get('test_name'):
             logger.error("test_name is missing in %s" % entry["report_id"])
             return entry
-        return sanitise.run(self._raw_header['test_name'], entry, self.bridge_db)
+        return sanitise.run(self.header['test_name'], entry, self.bridge_db)
 
     def add_record_type(self, entry):
         entry["record_type"] = "entry"
@@ -205,31 +229,3 @@ class Report(object):
             "raw": raw,
             "sanitised": sanitised
         }
-
-    def _restart_from_line(self, line_number):
-        """
-        This is used to skip to the specified line number in case of YAML
-        parsing erorrs. We also add to self._skipped_line since the YAML parsed
-        will consider the line count as relative to the start of the document.
-        """
-        self._skipped_line = line_number+self._skipped_line+1
-        self.in_file.seek(0)
-        for _ in xrange(self._skipped_line):
-            self.in_file.readline()
-        self._report = yaml.safe_load_all(self.in_file)
-
-    def process(self):
-        while True:
-            try:
-                entry = self._report.next()
-                if not entry:
-                    continue
-                yield self.process_entry(entry)
-            except StopIteration:
-                break
-            except Exception as exc:
-                self._end_time = time.time()
-                print("failed to process the entry for %s" % self.filename)
-                print(traceback.format_exc())
-                raise exc
-        self._end_time = time.time()
