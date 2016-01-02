@@ -59,7 +59,7 @@ class YAMLToJSONConverter(object):
             key_file=None,
             no_host_key_check=False)
         )
-        random.shuffle(self.report_files)
+        #random.shuffle(self.report_files)
 
     def start_conversion(self):
         if self.report_files is None:
