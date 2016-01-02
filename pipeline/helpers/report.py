@@ -46,6 +46,72 @@ header_avro = {
     ]
 }
 
+test_name_mappings = {
+    "http_host": "http_host",
+    "HTTP Host": "http_host",
+
+    "http_requests_test": "http_requests",
+    "http_requests":"http_requests",
+    "HTTP Requests Test": "http_requests",
+
+    "bridge_reachability": "bridge_reachability",
+    "bridgereachability": "bridge_reachability",
+
+    "TCP Connect": "tcp_connect",
+    "tcp_connect": "tcp_connect",
+
+    "DNS tamper": "dns_consistency",
+    "dns_consistency": "dns_consistency",
+
+    "HTTP Invalid Request Line": "http_invalid_request_line",
+    "http_invalid_request_line": "http_invalid_request_line",
+
+    "http_header_field_manipulation": "http_header_field_manipulation",
+    "HTTP Header Field Manipulation": "http_header_field_manipulation",
+
+    "Multi Protocol Traceroute Test": "multi_protocol_traceroute_test",
+    "multi_protocol_traceroute_test": "multi_protocol_traceroute",
+    "traceroute": "multi_protocol_traceroute",
+
+    "parasitic_traceroute_test": None,
+
+    "tls-handshake": None,
+
+    "dns_injection": None,
+
+    "captivep": "captive_portal",
+    "captiveportal": "captive_portal",
+
+    "HTTPFilteringBypass": "http_filtering_bypass",
+    "HTTPTrix": "http_trix",
+    "http_test": None,
+    "http_url_list": None,
+    "dns_spoof": None,
+    "netalyzrwrapper": "netalyzr_wrapper",
+
+    "tor_http_requests_test": None,
+    "sip_requests_test": None,
+    "tor_exit_ip_test": None,
+    "website_probe": None,
+    "base_tcp_test": None,
+
+    # These are ignored because they are invalid reports
+    "summary": None,
+    "test_get": None,
+    "test_put": None,
+    "test_post": None,
+    "this_test_is_nameless": None,
+    "test_send_host_header": None,
+
+    "test_get_random_capitalization": "http_header_field_manipulation",
+    "test_put_random_capitalization": "http_header_field_manipulation",
+    "test_post_random_capitalization": "http_header_field_manipulation",
+
+    "test_random_big_request_method": "http_invalid_request_line",
+    "test_random_invalid_field_count": "http_invalid_request_line",
+    "keyword_filtering_detection_based_on_rst_packets": None
+}
+
 class YAMLReport(object):
     def __init__(self, in_file, path):
         self._start_time = time.time()
@@ -74,6 +140,8 @@ class YAMLReport(object):
         if 'report' in entry:
             entry.update(entry.pop('report'))
         entry.update(self.header)
+        if test_name_mappings.get(entry['test_name']) is not None:
+            entry['test_name'] = test_name_mappings[entry['test_name']]
         return entry
 
     def entries(self):
@@ -124,14 +192,17 @@ class JSONReport(YAMLReport):
             PY3 = sys.version_info[0] == 3
             int2byte = (lambda x: bytes((x,))) if PY3 else chr
 
-            text_characters = "".join(map(chr, range(32, 127)) + list("\n\r\t\b"))
+            _text_characters = (
+                        b''.join(int2byte(i) for i in range(32, 127)) +
+                        b'\n\r\t\f\b'
+            )
 
             if b'\x00' in s:
                 return True
             elif not s:
                 return False
 
-            t = s.translate(None, str(text_characters))
+            t = s.translate(None, _text_characters)
 
             # If more than 30% non-text characters, then
             # we consider it to be binary

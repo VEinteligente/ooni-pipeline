@@ -59,7 +59,8 @@ class YAMLToJSONConverter(object):
             key_file=None,
             no_host_key_check=False)
         )
-        #random.shuffle(self.report_files)
+        self.report_files.sort()
+        # random.shuffle(self.report_files)
 
     def start_conversion(self):
         if self.report_files is None:
@@ -71,7 +72,7 @@ class YAMLToJSONConverter(object):
         self.process_pool.close()
         self.process_pool.join()
 
-def run(src_directory, dst_directory, fail_log, workers=4):
+def run(src_directory, dst_directory, fail_log="fail.log", workers=4):
     yaml_to_json = YAMLToJSONConverter(src_directory, dst_directory, fail_log=fail_log, workers=workers)
     yaml_to_json.list_reports()
     yaml_to_json.start_conversion()
