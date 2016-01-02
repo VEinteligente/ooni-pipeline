@@ -69,6 +69,6 @@ class YAMLToJSONConverter(object):
         self.process_pool.join()
 
 def run(src_directory, dst_directory, fail_log, workers=4):
-    yaml_to_json = YAMLToJSONConverter(src_directory, dst_directory, workers=workers)
+    yaml_to_json = YAMLToJSONConverter(src_directory, dst_directory, fail_log=fail_log, workers=workers)
     yaml_to_json.list_reports()
     yaml_to_json.start_conversion()
