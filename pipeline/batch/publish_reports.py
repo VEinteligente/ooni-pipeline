@@ -24,8 +24,8 @@ class PublishReports(luigi.Task):
                             "publish-log-{}.txt".format(self.date_interval)))
 
     def _get_dst_path(self, entry):
-        date_string = datetime.utcfromtimestamp(entry.get("start_time", 0))
-        date_string = date_string.isoformat().replace(":","")+"Z"
+        date = datetime.utcfromtimestamp(int(entry.get("start_time", 0)))
+        date_string = date.isoformat().replace(":","")+"Z"
         output_filename = "{date}-{probe_cc}-{asn}-{test_name}-{df_version}-{ext}".format(
             date=date_string,
             asn=entry["probe_asn"],
@@ -34,7 +34,11 @@ class PublishReports(luigi.Task):
             df_version="v1",
             ext="probe.json.gz"
         )
-        return os.path.join(self.output_path, output_filename)
+        return os.path.join(
+            self.output_path,
+            date.strftime("%Y-%m-%d"),
+            output_filename
+        )
 
     def is_bridge_reachability(self, entry, bridge_db):
         if entry['test_name'] not in ["tcp_connect", "bridge_reachability"]:
@@ -61,7 +65,7 @@ class PublishReports(luigi.Task):
             out_file.write(line)
         out_file.close()
         in_file.close()
-        in_target.remove()
+        # in_target.remove()
         publish_log.write(
             "%s: %s \n".format(datetime.now().isoformat(), dst_path)
         )
