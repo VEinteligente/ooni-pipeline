@@ -73,7 +73,7 @@ class PublishReports(luigi.Task):
         in_file.close()
         # in_target.remove()
         publish_log.write(
-            "%s: %s \n".format(datetime.now().isoformat(), dst_path)
+            "{}: {}\n".format(datetime.now().isoformat(), dst_path)
         )
 
     def run(self):
