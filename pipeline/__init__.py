@@ -3,6 +3,7 @@ from .batch.anomaly_detection_heuristics import DetectAnomalousHTTPInvalidReques
 from .batch.anomaly_detection_heuristics import DetectAnomalousHTTPHeaderFieldManipulation
 from .batch.anomaly_detection_heuristics import DetectAnomalousDNSConsistency
 from .batch.anomaly_detection_heuristics import DetectAnomalousHTTPRequestsMeasurements
+from .batch.publish_reports import PublishReports
 
 
 __all__ = [
@@ -10,5 +11,6 @@ __all__ = [
     "DetectAnomalousHTTPInvalidRequestLine",
     "DetectAnomalousHTTPHeaderFieldManipulation",
     "DetectAnomalousDNSConsistency",
-    "DetectAnomalousHTTPRequestsMeasurements"
+    "DetectAnomalousHTTPRequestsMeasurements",
+    "PublishReports"
 ]

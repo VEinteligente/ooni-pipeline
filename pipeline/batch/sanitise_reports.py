@@ -21,15 +21,19 @@ class SanitiseBridgeReachability(SanitiseReportsTask):
     def output(self):
         path = os.path.join(
             self.output_report_path,
-            "bridge_reachability-{}.json".format(self.date_interval)
+            "bridge_reachability-{}.json.gz".format(self.date_interval)
         )
         return get_luigi_target(path)
 
     def requires(self):
+        test_names = [
+            "tcp_connect",
+            "bridge_reachability"
+        ]
         return ListReportFiles(output_path=self.ouput_report_list_path,
                                report_path=self.input_report_path,
                                date_interval=self.date_interval,
-                               test_names=["tcp_connect", "bridge_reachability"])
+                               test_names=test_names)
 
     def sanitise_bridge_reachability(self, entry, bridge_db):
         if not entry.get('bridge_address'):

@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import luigi
 from pipeline.helpers.util import get_luigi_target
@@ -9,7 +10,7 @@ class DetectAnomalousReports(luigi.Task):
     test_name = ""
     date_interval = luigi.DateIntervalParameter()
 
-    output_path = luigi.Parameter(default="/data/ooni/")
+    output_path = luigi.Parameter(default="/data/ooni/working-dir")
     report_path = luigi.Parameter(default="/data/ooni/public/reports-sanitised/json/")
 
     def requires(self):
@@ -36,12 +37,14 @@ class DetectAnomalousReports(luigi.Task):
                 measurement = json_loads(line.strip())
                 anomaly = self.detect_anomaly(measurement)
                 if anomaly is not False:
+                    date_string = datetime.utcfromtimestamp(measurement.get("start_time"))
+                    date_string = date_string.isoformat().replace(":","")+"Z"
                     entry = {
                         "input": measurement.get("input"),
                         "report_id": measurement.get("report_id"),
                         "probe_cc": measurement.get("probe_cc"),
                         "probe_asn": measurement.get("probe_asn"),
-                        "date": measurement.get("start_time"),
+                        "date": date_string,
                         "anomaly": anomaly,
                         "report_path": file_path,
                         "file_offset": offset
