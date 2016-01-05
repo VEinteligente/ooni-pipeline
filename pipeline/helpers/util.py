@@ -70,10 +70,10 @@ def _ssh_walker(directory, key_file=None, no_host_key_check=False, recursive=Tru
 def list_report_files(directory, aws_access_key_id=None,
                       aws_secret_access_key=None, key_file=None,
                       no_host_key_check=False,
-                      recursive=True):
+                      recursive=True,
+                      report_extensions=(".yamloo", ".yamloo.gz", ".yaml", "yaml.gz")):
     def is_report_file(filename):
-        possible_extensions = (".yamloo", ".yamloo.gz", ".yaml", "yaml.gz")
-        if any(filename.endswith(ext) for ext in possible_extensions):
+        if any(filename.endswith(ext) for ext in report_extensions):
             return True
         return False
 
@@ -94,7 +94,8 @@ def list_report_files(directory, aws_access_key_id=None,
             yield path
 
 def get_imported_dates(directory, aws_access_key_id=None,
-                       aws_secret_access_key=None):
+                       aws_secret_access_key=None,
+                       key_file=None, no_host_key_check=None):
 
     if directory.startswith("s3n://"):
         walker = _s3_walker(aws_access_key_id=aws_access_key_id,

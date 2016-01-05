@@ -15,12 +15,12 @@ class DetectAnomalousReports(luigi.Task):
     def requires(self):
         return ListReportFiles(date_interval=self.date_interval,
                                test_names=[self.test_name],
-                               output_path=self.ouput_path,
+                               output_path=self.output_path,
                                report_path=self.report_path)
 
     def output(self):
         path = os.path.join(
-            self.ouput_path,
+            self.output_path,
             "anomalous-{}-{}.json".format(self.test_name, self.date_interval)
         )
         return get_luigi_target(path)
