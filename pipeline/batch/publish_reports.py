@@ -29,7 +29,7 @@ class PublishReports(luigi.Task):
         output_filename = "{date}-{probe_cc}-{asn}-{test_name}-{df_version}-{ext}".format(
             date=date_string,
             asn=entry["probe_asn"],
-            probe_cc=entry["probe_asn"],
+            probe_cc=entry["probe_cc"],
             test_name=entry["test_name"],
             df_version="v1",
             ext="probe.json.gz"
@@ -46,7 +46,8 @@ class PublishReports(luigi.Task):
         return False
 
     def publish(self, report_file_path, publish_log, bridge_db):
-        in_file = get_luigi_target(report_file_path).open('r')
+        in_target = get_luigi_target(report_file_path)
+        in_file = in_target.open('r')
         first_line = in_file.readline()
         entry = json_loads(first_line.strip())
 
@@ -60,7 +61,7 @@ class PublishReports(luigi.Task):
             out_file.write(line)
         out_file.close()
         in_file.close()
-        in_file.remove()
+        in_target.remove()
         publish_log.write(
             "%s: %s \n".format(datetime.now().isoformat(), dst_path)
         )
