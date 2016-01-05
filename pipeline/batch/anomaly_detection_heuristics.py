@@ -35,7 +35,7 @@ class DetectAnomalousReports(luigi.Task):
             for line in report_file:
                 measurement = json_loads(line.strip())
                 anomaly = self.detect_anomaly(measurement)
-                if anomaly is not None:
+                if anomaly is not False:
                     entry = {
                         "input": measurement.get("input"),
                         "report_id": measurement.get("report_id"),
@@ -153,7 +153,7 @@ class DetectAnomalousHTTPRequestsMeasurements(DetectAnomalousReports):
             else:
                 return 'body_length_mismatch'
 
-        return None
+        return False
 
     def extra_keys(self, measurement):
         return {
