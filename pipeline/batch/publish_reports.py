@@ -21,7 +21,7 @@ class PublishReports(luigi.Task):
 
     def output(self):
         return os.path.join(self.output_path,
-                            "publish-log-{}.txt" % self.date_interval)
+                            "publish-log-{}.txt".format(self.date_interval))
 
     def _get_dst_path(self, entry):
         date_string = datetime.utcfromtimestamp(entry.get("start_time", 0))
