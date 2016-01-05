@@ -37,8 +37,8 @@ class DetectAnomalousReports(luigi.Task):
                 measurement = json_loads(line.strip())
                 anomaly = self.detect_anomaly(measurement)
                 if anomaly is not False:
-                    date_string = datetime.utcfromtimestamp(measurement.get("start_time"))
-                    date_string = date_string.isoformat().replace(":","")+"Z"
+                    date_string = datetime.utcfromtimestamp(int(measurement.get("start_time", 0)))
+                    date_string = date_string.isoformat().replace(":","").replace("-", "")+"Z"
                     entry = {
                         "input": measurement.get("input"),
                         "report_id": measurement.get("report_id"),
@@ -120,7 +120,7 @@ class BlockPagedetector(object):
             return True
         return False
 
-class DetectAnomalousHTTPRequestsMeasurements(DetectAnomalousReports):
+class DetectAnomalousHTTPRequests(DetectAnomalousReports):
     test_name = "http_requests"
 
     def detect_anomaly(self, measurement):
@@ -162,3 +162,31 @@ class DetectAnomalousHTTPRequestsMeasurements(DetectAnomalousReports):
         return {
             "body_proportion": measurement.get("body_proportion")
         }
+
+class DetectAllAnomalies(luigi.WrapperTask):
+    date_interval = luigi.DateIntervalParameter()
+
+    output_path = luigi.Parameter(default="/data/ooni/working-dir")
+    report_path = luigi.Parameter(default="/data/ooni/public/reports-sanitised/json/")
+
+    def requires(self):
+        yield DetectAnomalousHTTPInvalidRequestLine(
+            date_interval=self.date_interval,
+            output_path=self.output_path,
+            report_path=self.report_path
+        )
+        yield DetectAnomalousHTTPHeaderFieldManipulation(
+            date_interval=self.date_interval,
+            output_path=self.output_path,
+            report_path=self.report_path
+        )
+        yield DetectAnomalousDNSConsistency(
+            date_interval=self.date_interval,
+            output_path=self.output_path,
+            report_path=self.report_path
+        )
+        yield DetectAnomalousHTTPRequests(
+            date_interval=self.date_interval,
+            output_path=self.output_path,
+            report_path=self.report_path
+        )
