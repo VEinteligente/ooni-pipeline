@@ -50,7 +50,7 @@ class PublishReports(luigi.Task):
         first_line = in_file.readline()
         entry = json_loads(first_line.strip())
 
-        if self.is_bridge_reachability(entry):
+        if self.is_bridge_reachability(entry, bridge_db):
             return
 
         dst_path = self._get_dst_path(entry)
