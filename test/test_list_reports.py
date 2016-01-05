@@ -9,7 +9,7 @@ class TestListReports(unittest.TestCase):
 
     def setUp(self):
         self.mother_directory = tempfile.mkdtemp()
-        print self.mother_directory
+        print "working in ", self.mother_directory
         dir1 = os.path.join(self.mother_directory, "2013-01-01")
         dir2 = os.path.join(self.mother_directory, "2013-01-02")
         dir3 = os.path.join(self.mother_directory, "2014-01-01")
@@ -20,21 +20,20 @@ class TestListReports(unittest.TestCase):
         filenames1 = ["20130101T000000Z-AS00-dnstamper-v1-probe.yaml",
                       "20130101T000000Z-AS00-tcpconnect-v1-probe.yaml",
                       "20130101T000000Z-AS00-http_requests-v1-probe.yaml",
-                      "20130101T000000Z-AS00-http_requests-v1-probe.yaml",
-                      "20130101T000000Z-AS00-dnstamper-v1-probe.yaml",
-                      "20130101T000000Z-AS00-dnstamper-v1-probe.yaml"]
+                      "20130101T000001Z-AS00-http_requests-v1-probe.yaml",
+                      "20130101T000001Z-AS00-dnstamper-v1-probe.yaml"]
+
         filenames2 = ["20130102T000000Z-AS00-dnstamper-v1-probe.yaml",
                       "20130102T000000Z-AS00-tcpconnect-v1-probe.yaml",
                       "20130102T000000Z-AS00-http_requests-v1-probe.yaml",
-                      "20130102T000000Z-AS00-http_requests-v1-probe.yaml",
-                      "20130102T000000Z-AS00-dnstamper-v1-probe.yaml",
-                      "20130102T000000Z-AS00-dnstamper-v1-probe.yaml"]
+                      "20130102T000001Z-AS00-http_requests-v1-probe.yaml",
+                      "20130102T000001Z-AS00-dnstamper-v1-probe.yaml"]
+
         filenames3 = ["20140101T000000Z-AS00-dnstamper-v1-probe.yaml",
                       "20140101T000000Z-AS00-tcpconnect-v1-probe.yaml",
                       "20140101T000000Z-AS00-http_requests-v1-probe.yaml",
-                      "20140101T000000Z-AS00-http_requests-v1-probe.yaml",
-                      "20140101T000000Z-AS00-dnstamper-v1-probe.yaml",
-                      "20140101T000000Z-AS00-dnstamper-v1-probe.yaml"]
+                      "20140101T000001Z-AS00-http_requests-v1-probe.yaml",
+                      "20140101T000001Z-AS00-dnstamper-v1-probe.yaml"]
 
         for filename in filenames1:
             open(os.path.join(dir1, filename), 'a').close()
@@ -45,11 +44,21 @@ class TestListReports(unittest.TestCase):
 
     def test_list_report(self):
         dateinterval = get_date_interval('2013')
-        print 11
         ListReportFiles(date_interval=dateinterval,
                         test_names=['http_requests'],
                         output_path=self.mother_directory,
                         report_path=self.mother_directory).run()
+
+        with open(self.mother_directory + "/report-list-2013-http_requests.txt", 'r') as f:
+            out_reports = f.read()
+
+        assert "20130101T000000Z-AS00-http_requests-v1-probe.yaml" in out_reports
+        assert "20130101T000001Z-AS00-http_requests-v1-probe.yaml" in out_reports
+        assert "20130102T000000Z-AS00-http_requests-v1-probe.yaml" in out_reports
+        assert "20130102T000001Z-AS00-http_requests-v1-probe.yaml" in out_reports
+        assert "20140102T000000Z-AS00-http_requests-v1-probe.yaml" not in out_reports
+
+
 
 if __name__ == '__main__':
     unittest.main()
