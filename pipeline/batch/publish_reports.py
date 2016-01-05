@@ -20,7 +20,7 @@ class PublishReports(luigi.Task):
     bridge_db_path = luigi.Parameter(default="/data/ooni/private/bridge_reachability/bridge_db.json")
 
     def output(self):
-        return os.path.join(self.ouput_path,
+        return os.path.join(self.output_path,
                             "publish-log-{}.txt" % self.date_interval)
 
     def _get_dst_path(self, entry):
