@@ -53,9 +53,15 @@ class PublishReports(luigi.Task):
         in_target = get_luigi_target(report_file_path)
         in_file = in_target.open('r')
         first_line = in_file.readline()
+
+        if not first_line:
+            in_file.close()
+            return
+
         entry = json_loads(first_line.strip())
 
         if self.is_bridge_reachability(entry, bridge_db):
+            in_file.close()
             return
 
         dst_path = self._get_dst_path(entry)
