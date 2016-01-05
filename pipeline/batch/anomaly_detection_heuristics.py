@@ -73,9 +73,9 @@ class DetectAnomalousHTTPHeaderFieldManipulation(DetectAnomalousReports):
     test_name = "http_header_field_manipulation"
 
     def detect_anomaly(self, measurement):
-        if all(_ == False for _ in measurement.get("tampering")):
+        if all(v == False for k, v in measurement.get("tampering", {}).items()):
             return False
-        if any(_ == True for _ in measurement.get("tampering")):
+        if any(v == True for k, v in measurement.get("tampering", {}).items()):
             return "tampering"
         return False
 
