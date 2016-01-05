@@ -139,7 +139,7 @@ class DetectAnomalousHTTPRequests(DetectAnomalousReports):
                 control_requests.append(request)
             elif request.get("tor") is True:
                 control_requests.append(request)
-            elif request.get("url").startswith("shttp://"):
+            elif request["request"].get("url").startswith("shttp://"):
                 control_requests.append(request)
             else:
                 experiment_requests.append(request)
