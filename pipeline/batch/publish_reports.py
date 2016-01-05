@@ -25,7 +25,7 @@ class PublishReports(luigi.Task):
 
     def _get_dst_path(self, entry):
         date = datetime.utcfromtimestamp(int(entry.get("start_time", 0)))
-        date_string = date.isoformat().replace(":","")+"Z"
+        date_string = date.isoformat().replace(":","").replace("-", "")+"Z"
         output_filename = "{date}-{probe_cc}-{asn}-{test_name}-{df_version}-{ext}".format(
             date=date_string,
             asn=entry["probe_asn"],
