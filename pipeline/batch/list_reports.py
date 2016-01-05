@@ -13,12 +13,12 @@ class ListReportFiles(luigi.Task):
     def output(self):
         path = os.path.join(
             self.output_path,
-            "reports-{}-{}.txt".format(self.test_name, self.date_interval)
+            "reports-{}-{}.txt".format(self.test_names, self.date_interval)
         )
         return get_luigi_target(path)
 
     def run(self):
-        out_file = self.ouput().open('w')
+        out_file = self.output().open('w')
         for date in self.date_interval:
             for report_file_path in list_report_files(
                 os.path.join(self.report_path, date.strftime("%Y-%m-%d")),
