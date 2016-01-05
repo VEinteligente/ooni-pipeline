@@ -144,7 +144,7 @@ class DetectAnomalousHTTPRequests(DetectAnomalousReports):
             else:
                 experiment_requests.append(request)
         for request in experiment_requests:
-            if bpd.detect(request.get('response', {}).get('body', "")):
+            if bpd.detect(request.get('response', {}).get('body', ""), measurement['probe_cc']):
                 return 'blockpage_detected'
 
         if measurement.get("control_failure") != None \
