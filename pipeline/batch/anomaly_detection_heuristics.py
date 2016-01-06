@@ -64,7 +64,7 @@ class DetectAnomalousHTTPInvalidRequestLine(DetectAnomalousReports):
         else:
             return "inconsistent_response"
 
-    def extra_keys(self, measurement):
+    def extra_fields(self, measurement):
         return [
             measurement.get("received")
         ]
@@ -79,7 +79,7 @@ class DetectAnomalousHTTPHeaderFieldManipulation(DetectAnomalousReports):
             return "tampering"
         return False
 
-    def extra_keys(self, measurement):
+    def extra_fields(self, measurement):
         return [
             measurement.get("tampering")
         ]
@@ -90,7 +90,7 @@ class DetectAnomalousDNSConsistency(DetectAnomalousReports):
     def detect_anomaly(self, measurement):
         return any(_ == True for _ in measurement.get("tampering"))
 
-    def extra_keys(self, measurement):
+    def extra_fields(self, measurement):
         tampered_resolvers = []
         tampered_queries = {}
         for resolver_ip, tampering in measurement.get("tampering", {}).items():
@@ -156,7 +156,7 @@ class DetectAnomalousHTTPRequests(DetectAnomalousReports):
 
         return False
 
-    def extra_keys(self, measurement):
+    def extra_fields(self, measurement):
         return [
             measurement.get("experiment_failure")
         ]
