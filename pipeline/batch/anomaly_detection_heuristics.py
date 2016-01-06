@@ -97,7 +97,7 @@ class DetectAnomalousDNSConsistency(DetectAnomalousReports):
             if tampering == True:
                 tampered_resolvers.append(resolver_ip)
         for query in measurement.get('queries', []):
-            if query.get("resolver", []).get(0, "") in tampered_resolvers:
+            if query.get("resolver") and query.get("resolver")[0] in tampered_resolvers:
                 tampered_queries[query['resolver'][0]] = query.get('addrs', [])
 
         return [
