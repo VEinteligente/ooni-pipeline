@@ -39,16 +39,16 @@ class DetectAnomalousReports(luigi.Task):
                 date_string = datetime.utcfromtimestamp(int(measurement.get("start_time", 0)))
                 date_string = date_string.isoformat().replace(":","").replace("-", "")+"Z"
                 row = [
-                    measurement.get("input", ""),
-                    measurement.get("report_id", ""),
-                    measurement.get("probe_cc", ""),
-                    measurement.get("probe_asn", ""),
+                    measurement.get("input"),
+                    measurement.get("report_id"),
+                    measurement.get("probe_cc"),
+                    measurement.get("probe_asn"),
                     date_string,
                     anomaly
                 ]
                 row += self.extra_fields(measurement)
                 out_file.write(
-                    "{}\n".format("\t".join(row))
+                    "{}\n".format("\t".join(map(lambda _: str(_), row)))
                 )
         out_file.close()
         in_file.close()
@@ -66,7 +66,7 @@ class DetectAnomalousHTTPInvalidRequestLine(DetectAnomalousReports):
 
     def extra_fields(self, measurement):
         return [
-            measurement.get("received", "none")
+            measurement.get("received")
         ]
 
 class DetectAnomalousHTTPHeaderFieldManipulation(DetectAnomalousReports):
@@ -81,7 +81,7 @@ class DetectAnomalousHTTPHeaderFieldManipulation(DetectAnomalousReports):
 
     def extra_fields(self, measurement):
         return [
-            measurement.get("tampering", "none")
+            measurement.get("tampering")
         ]
 
 class DetectAnomalousDNSConsistency(DetectAnomalousReports):
@@ -158,7 +158,7 @@ class DetectAnomalousHTTPRequests(DetectAnomalousReports):
 
     def extra_fields(self, measurement):
         return [
-            measurement.get("experiment_failure", "none")
+            measurement.get("experiment_failure")
         ]
 
 class DetectAllAnomalies(luigi.WrapperTask):
