@@ -15,6 +15,7 @@ class ListReportFiles(luigi.Task):
     def output(self):
         path = os.path.join(
             self.output_path,
+            "lists",
             "report-list-{}-{}.txt".format(
                 self.date_interval,
                 '-'.join(self.test_names)

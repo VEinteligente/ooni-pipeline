@@ -22,7 +22,8 @@ class DetectAnomalousReports(luigi.Task):
     def output(self):
         path = os.path.join(
             self.output_path,
-            "anomalous-{}-{}.json".format(self.test_name, self.date_interval)
+            "anomalies",
+            "anomalous-{}-{}.tsv".format(self.test_name, self.date_interval)
         )
         return get_luigi_target(path)
 
@@ -30,29 +31,25 @@ class DetectAnomalousReports(luigi.Task):
         out_file = self.output().open('w')
         in_file = self.input().open('r')
         for file_path in in_file:
-            offset = 0
             file_path = file_path.strip()
             report_file = get_luigi_target(file_path).open('r')
             for line in report_file:
                 measurement = json_loads(line.strip())
                 anomaly = self.detect_anomaly(measurement)
-                if anomaly is not False:
-                    date_string = datetime.utcfromtimestamp(int(measurement.get("start_time", 0)))
-                    date_string = date_string.isoformat().replace(":","").replace("-", "")+"Z"
-                    entry = {
-                        "input": measurement.get("input"),
-                        "report_id": measurement.get("report_id"),
-                        "probe_cc": measurement.get("probe_cc"),
-                        "probe_asn": measurement.get("probe_asn"),
-                        "date": date_string,
-                        "anomaly": anomaly,
-                        "report_path": file_path,
-                        "file_offset": offset
-                    }
-                    entry.update(self.extra_keys(measurement))
-                    out_file.write(json_dumps(entry))
-                    out_file.write("\n")
-                offset += 1
+                date_string = datetime.utcfromtimestamp(int(measurement.get("start_time", 0)))
+                date_string = date_string.isoformat().replace(":","").replace("-", "")+"Z"
+                row = [
+                    measurement.get("input"),
+                    measurement.get("report_id"),
+                    measurement.get("probe_cc"),
+                    measurement.get("probe_asn"),
+                    date_string,
+                    anomaly
+                ]
+                row += self.extra_fields(measurement)
+                out_file.write(
+                    "{}\n".format("\t".join(row))
+                )
         out_file.close()
         in_file.close()
 
@@ -68,9 +65,9 @@ class DetectAnomalousHTTPInvalidRequestLine(DetectAnomalousReports):
             return "inconsistent_response"
 
     def extra_keys(self, measurement):
-        return {
-            "received": measurement.get("received")
-        }
+        return [
+            measurement.get("received")
+        ]
 
 class DetectAnomalousHTTPHeaderFieldManipulation(DetectAnomalousReports):
     test_name = "http_header_field_manipulation"
@@ -83,9 +80,9 @@ class DetectAnomalousHTTPHeaderFieldManipulation(DetectAnomalousReports):
         return False
 
     def extra_keys(self, measurement):
-        return {
-            "tampering": measurement.get("tampering")
-        }
+        return [
+            measurement.get("tampering")
+        ]
 
 class DetectAnomalousDNSConsistency(DetectAnomalousReports):
     test_name = "dns_consistency"
@@ -102,10 +99,11 @@ class DetectAnomalousDNSConsistency(DetectAnomalousReports):
         for query in measurement.get('queries', []):
             if query.get("resolver", []).get(0, "") in tampered_resolvers:
                 tampered_queries[query['resolver'][0]] = query.get('addrs', [])
-        return {
-            "tampered_resolvers": tampered_resolvers,
-            "tampered_queries": tampered_queries
-        }
+
+        return [
+            tampered_resolvers,
+            tampered_queries
+        ]
 
 class BlockPagedetector(object):
     known_blockpages = {
@@ -147,9 +145,9 @@ class DetectAnomalousHTTPRequests(DetectAnomalousReports):
             if bpd.detect(request.get('response', {}).get('body', ""), measurement['probe_cc']):
                 return 'blockpage_detected'
 
-        if measurement.get("control_failure") != None \
-                and measurement.get("experiment_failure") == None:
-            return 'control_failure'
+        if measurement.get("control_failure") == None \
+                and measurement.get("experiment_failure") != None:
+            return 'experiment_failure'
         if measurement.get("body_length_match") == False:
             if is_cloudflare(measurement.get("requests")):
                 return 'cloudflare'
@@ -159,9 +157,9 @@ class DetectAnomalousHTTPRequests(DetectAnomalousReports):
         return False
 
     def extra_keys(self, measurement):
-        return {
-            "body_proportion": measurement.get("body_proportion")
-        }
+        return [
+            measurement.get("experiment_failure")
+        ]
 
 class DetectAllAnomalies(luigi.WrapperTask):
     date_interval = luigi.DateIntervalParameter()
