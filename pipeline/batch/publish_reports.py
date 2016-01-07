@@ -43,7 +43,7 @@ class PublishReports(luigi.Task):
     def is_bridge_reachability(self, entry, bridge_db):
         if entry['test_name'] not in ["tcp_connect", "bridge_reachability"]:
             return False
-        elif entry.get('input', '').strip() in bridge_db.keys():
+        elif entry.get('input') and entry.get('input').strip() in bridge_db.keys():
             return True
         elif entry.get('bridge_address', '').strip() in bridge_db.keys():
             return True
