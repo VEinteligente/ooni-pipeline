@@ -45,7 +45,7 @@ class PublishReports(luigi.Task):
             return False
         elif entry.get('input') and entry.get('input').strip() in bridge_db.keys():
             return True
-        elif entry.get('bridge_address', '').strip() in bridge_db.keys():
+        elif entry.get('bridge_address') and entry.get('bridge_address').strip() in bridge_db.keys():
             return True
         return False
 
