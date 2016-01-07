@@ -47,6 +47,7 @@ class DetectAnomalousReports(luigi.Task):
                     anomaly
                 ]
                 row += self.extra_fields(measurement)
+                row = map(lambda _: "none" if _ is None else _)
                 out_file.write(
                     "{}\n".format("\t".join(row))
                 )
