@@ -48,7 +48,7 @@ class DetectAnomalousReports(luigi.Task):
                 ]
                 row += self.extra_fields(measurement)
                 out_file.write(
-                    "{}\n".format("\t".join(map(lambda _: str(_), row)))
+                    "{}\n".format("\t".join(row))
                 )
         out_file.close()
         in_file.close()
@@ -58,7 +58,7 @@ class DetectAnomalousHTTPInvalidRequestLine(DetectAnomalousReports):
 
     def detect_anomaly(self, measurement):
         if measurement.get("tampering") == False:
-            return False
+            return "none"
         if all(_ == "" for _ in measurement.get("received")):
             return "empty_response"
         else:
@@ -74,10 +74,10 @@ class DetectAnomalousHTTPHeaderFieldManipulation(DetectAnomalousReports):
 
     def detect_anomaly(self, measurement):
         if all(v == False for k, v in measurement.get("tampering", {}).items()):
-            return False
+            return "none"
         if any(v == True for k, v in measurement.get("tampering", {}).items()):
             return "tampering"
-        return False
+        return "none"
 
     def extra_fields(self, measurement):
         return [
@@ -154,7 +154,7 @@ class DetectAnomalousHTTPRequests(DetectAnomalousReports):
             else:
                 return 'body_length_mismatch'
 
-        return False
+        return "none"
 
     def extra_fields(self, measurement):
         return [
