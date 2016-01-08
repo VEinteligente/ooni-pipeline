@@ -192,29 +192,27 @@ class DetectAllAnomalies(luigi.WrapperTask):
             )
 
 class CountCensoredSites(luigi.Task):
-    date_interval = luigi.DateIntervalParameter()
+    date = luigi.DateParameter()
 
     output_path = luigi.Parameter(default="/data/ooni/working-dir")
     report_path = luigi.Parameter(default="/data/ooni/public/reports/json/")
 
     def requires(self):
-        return [DetectAnomalousHTTPRequests(date=date,
-                                            output_path=self.output_path,
-                                            report_path=self.report_path)
-                for date in self.date_interval
-        ]
+        return DetectAnomalousHTTPRequests(date=date,
+                                           output_path=self.output_path,
+                                           report_path=self.report_path)
 
     def output(self):
         return {
             "count": get_luigi_target(os.path.join(
                 self.output_path,
                 "counts",
-                "censored-sites-count-{}.tsv".format(self.date_interval)
+                "censored-sites-count-{}.tsv".format(self.date)
             )),
             "site-list": get_luigi_target(os.path.join(
                 self.output_path,
                 "counts",
-                "site-list-{}.tsv".format(self.date_interval)
+                "site-list-{}.tsv".format(self.date)
             ))
         }
 
@@ -256,3 +254,14 @@ class CountCensoredSites(luigi.Task):
                     value.get('body_length_mismatch-count', 0),
                     value.get('none-count', 0),
                 ))
+
+class AggregateCensoredSitesCount(luigi.WrapperTask):
+    date_interval = luigi.DateIntervalParameter()
+
+    output_path = luigi.Parameter(default="/data/ooni/working-dir")
+    report_path = luigi.Parameter(default="/data/ooni/public/reports/json/")
+
+    def requires(self):
+        for date in self.date_interval:
+            yield CountCensoredSites(date=date, output_path=self.output_path,
+                                     report_path=self.report_path)
