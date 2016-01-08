@@ -198,7 +198,7 @@ class CountCensoredSites(luigi.Task):
     report_path = luigi.Parameter(default="/data/ooni/public/reports/json/")
 
     def requires(self):
-        return DetectAnomalousHTTPRequests(date=date,
+        return DetectAnomalousHTTPRequests(date=self.date,
                                            output_path=self.output_path,
                                            report_path=self.report_path)
 
