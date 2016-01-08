@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+import datetime
 
 import luigi
 from pipeline.helpers.util import get_luigi_target
@@ -8,13 +8,13 @@ from .list_reports import ListReportFiles
 
 class DetectAnomalousReports(luigi.Task):
     test_name = ""
-    date_interval = luigi.DateIntervalParameter()
+    date = luigi.DateParameter(default=datetime.date.today())
 
     output_path = luigi.Parameter(default="/data/ooni/working-dir")
-    report_path = luigi.Parameter(default="/data/ooni/public/reports-sanitised/json/")
+    report_path = luigi.Parameter(default="/data/ooni/public/reports/json/")
 
     def requires(self):
-        return ListReportFiles(date_interval=self.date_interval,
+        return ListReportFiles(date=self.date,
                                test_names=[self.test_name],
                                output_path=self.output_path,
                                report_path=self.report_path)
@@ -23,7 +23,7 @@ class DetectAnomalousReports(luigi.Task):
         path = os.path.join(
             self.output_path,
             "anomalies",
-            "anomalous-{}-{}.tsv".format(self.test_name, self.date_interval)
+            "anomalous-{}-{}.tsv".format(self.test_name, self.date)
         )
         return get_luigi_target(path)
 
@@ -36,7 +36,7 @@ class DetectAnomalousReports(luigi.Task):
             for line in report_file:
                 measurement = json_loads(line.strip())
                 anomaly = self.detect_anomaly(measurement)
-                date_string = datetime.utcfromtimestamp(int(measurement.get("start_time", 0)))
+                date_string = datetime.datetime.utcfromtimestamp(int(measurement.get("start_time", 0)))
                 date_string = date_string.isoformat().replace(":","").replace("-", "")+"Z"
                 row = [
                     measurement.get("input"),
@@ -166,26 +166,90 @@ class DetectAllAnomalies(luigi.WrapperTask):
     date_interval = luigi.DateIntervalParameter()
 
     output_path = luigi.Parameter(default="/data/ooni/working-dir")
-    report_path = luigi.Parameter(default="/data/ooni/public/reports-sanitised/json/")
+    report_path = luigi.Parameter(default="/data/ooni/public/reports/json/")
 
     def requires(self):
-        yield DetectAnomalousHTTPInvalidRequestLine(
-            date_interval=self.date_interval,
-            output_path=self.output_path,
-            report_path=self.report_path
-        )
-        yield DetectAnomalousHTTPHeaderFieldManipulation(
-            date_interval=self.date_interval,
-            output_path=self.output_path,
-            report_path=self.report_path
-        )
-        yield DetectAnomalousDNSConsistency(
-            date_interval=self.date_interval,
-            output_path=self.output_path,
-            report_path=self.report_path
-        )
-        yield DetectAnomalousHTTPRequests(
-            date_interval=self.date_interval,
-            output_path=self.output_path,
-            report_path=self.report_path
-        )
+        for date in self.date_interval:
+            yield DetectAnomalousHTTPInvalidRequestLine(
+                date=date,
+                output_path=self.output_path,
+                report_path=self.report_path
+            )
+            yield DetectAnomalousHTTPHeaderFieldManipulation(
+                date=date,
+                output_path=self.output_path,
+                report_path=self.report_path
+            )
+            yield DetectAnomalousDNSConsistency(
+                date=date,
+                output_path=self.output_path,
+                report_path=self.report_path
+            )
+            yield DetectAnomalousHTTPRequests(
+                date=date,
+                output_path=self.output_path,
+                report_path=self.report_path
+            )
+
+class CountCensoredSites(luigi.Task):
+    date_interval = luigi.DateIntervalParameter()
+
+    def requires(self):
+        return [DetectAnomalousHTTPRequests(date=date,
+                                            output_path=self.output_path,
+                                            report_path=self.report_path)
+                for date in self.date_interval
+        ]
+
+    def output(self):
+        return {
+            "count": get_luigi_target(os.path.join(
+                self.output_path,
+                "counts",
+                "censored-sites-count-{}.tsv".format(self.date_interval)
+            )),
+            "site-list": get_luigi_target(os.path.join(
+                self.output_path,
+                "counts",
+                "site-list-{}.tsv".format(self.date_interval)
+            ))
+        }
+
+    def run(self):
+        sites = set()
+        censored_site_count = {
+            "report_id": {
+                "cc": "",
+                "date": "",
+                "asn": ""
+            }
+        }
+        for input_target in self.input():
+            with input_target.open('r') as in_file:
+                for line in in_file:
+                    url, report_id, probe_cc, \
+                        probe_asn, date_string, anomaly, \
+                        experiment_failure = line.strip().split("\t")
+                    sites.add(url)
+                    censored_site_count[report_id] = \
+                        censored_site_count.get(report_id, {
+                            "cc": probe_cc,
+                            "asn": probe_asn,
+                            "date": date_string
+                        })
+                    censored_site_count[report_id][anomaly+"-count"] = \
+                        censored_site_count[report_id].get(anomaly+"-count", 0) + 1
+
+        with self.output()['site_list'].open('w') as site_list:
+            for site in sites:
+                site_list.write(site+"\n")
+
+        with self.output()['count'].open('w') as counts:
+            for report_id, value in censored_site_count.items():
+                counts.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
+                    report_id, value['cc'], value['asn'], value['date'],
+                    value.get('blockpage_detected-count', 0),
+                    value.get('experiment_failure-count', 0),
+                    value.get('body_length_mismatch-count', 0),
+                    value.get('none-count', 0),
+                ))

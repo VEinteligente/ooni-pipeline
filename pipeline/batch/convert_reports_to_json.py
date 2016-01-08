@@ -2,6 +2,8 @@ import os
 import random
 import traceback
 
+from luigi.configuration import get_config
+
 from multiprocessing import Pool
 
 from pipeline.helpers.util import json_dumps
@@ -53,12 +55,13 @@ class YAMLToJSONConverter(object):
         self.report_files = None
 
     def list_reports(self):
+        config = get_config()
         self.report_files = list(list_report_files(
             self.src_directory,
-            aws_access_key_id=None,
-            aws_secret_access_key=None,
-            key_file=None,
-            no_host_key_check=False)
+            aws_access_key_id=config.get('s3', 'aws_access_key_id'),
+            aws_secret_access_key=config.get('s3', 'aws_secret_access_key'),
+            report_extensions=(".yamloo", ".yaml")
+            )
         )
         self.report_files.sort()
 
