@@ -133,7 +133,7 @@ class DetectAnomalousHTTPRequests(DetectAnomalousReports):
         experiment_requests = []
         control_requests = []
 
-        for request in measurement.get("requests"):
+        for request in measurement.get("requests", []):
             if request.get("tor", {}).get("is_tor") is True:
                 control_requests.append(request)
             elif request.get("tor") is True:

@@ -20,8 +20,9 @@ class PublishReports(luigi.Task):
     bridge_db_path = luigi.Parameter(default="/data/ooni/private/bridge_reachability/bridge_db.json")
 
     def output(self):
-        return get_luigi_target(os.path.join(self.output_path,
-                            "publish-log-{}.txt".format(self.date_interval)))
+        return get_luigi_target(
+            os.path.join(self.output_path, "publish-log-{}.txt".format(self.date_interval))
+        )
 
     def _get_dst_path(self, entry):
         date = datetime.utcfromtimestamp(int(entry.get("start_time", 0)))
@@ -73,7 +74,7 @@ class PublishReports(luigi.Task):
         in_file.close()
         # in_target.remove()
         publish_log.write(
-            "{}: {}\n".format(datetime.now().isoformat(), dst_path)
+            "{}\t{}\t{}\n".format(datetime.now().isoformat(), report_file_path, dst_path)
         )
 
     def run(self):
