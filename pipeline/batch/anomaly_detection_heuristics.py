@@ -109,7 +109,7 @@ class DetectAnomalousDNSConsistency(DetectAnomalousReports):
 class BlockPagedetector(object):
     known_blockpages = {
         "SA": '<title>Blocked',
-        "IR": 'iframe src="http://10.10"'
+        "IR": 'iframe src="http://10.10'
     }
     def detect(self, body, cc):
         blockpage_string = self.known_blockpages.get(cc)
@@ -138,12 +138,13 @@ class DetectAnomalousHTTPRequests(DetectAnomalousReports):
                 control_requests.append(request)
             elif request.get("tor") is True:
                 control_requests.append(request)
-            elif request["request"].get("url").startswith("shttp://"):
+            elif request.get("request", {}).get("url", "").startswith("shttp://"):
                 control_requests.append(request)
             else:
                 experiment_requests.append(request)
         for request in experiment_requests:
-            if bpd.detect(request.get('response', {}).get('body', ""), measurement['probe_cc']):
+            if bpd.detect(request.get('response', {}).get('body', ""),
+                          measurement['probe_cc']):
                 return 'blockpage_detected'
 
         if measurement.get("control_failure") == None \
