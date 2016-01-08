@@ -234,7 +234,7 @@ class CountCensoredSites(luigi.Task):
                 censored_site_count[report_id][anomaly+"-count"] = \
                     censored_site_count[report_id].get(anomaly+"-count", 0) + 1
 
-        with self.output()['site_list'].open('w') as site_list:
+        with self.output()['site-list'].open('w') as site_list:
             for site in sites:
                 site_list.write(site+"\n")
 
