@@ -194,6 +194,9 @@ class DetectAllAnomalies(luigi.WrapperTask):
 class CountCensoredSites(luigi.Task):
     date_interval = luigi.DateIntervalParameter()
 
+    output_path = luigi.Parameter(default="/data/ooni/working-dir")
+    report_path = luigi.Parameter(default="/data/ooni/public/reports/json/")
+
     def requires(self):
         return [DetectAnomalousHTTPRequests(date=date,
                                             output_path=self.output_path,
