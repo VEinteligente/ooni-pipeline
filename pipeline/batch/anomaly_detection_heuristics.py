@@ -218,28 +218,21 @@ class CountCensoredSites(luigi.Task):
 
     def run(self):
         sites = set()
-        censored_site_count = {
-            "report_id": {
-                "cc": "",
-                "date": "",
-                "asn": ""
-            }
-        }
-        for input_target in self.input():
-            with input_target.open('r') as in_file:
-                for line in in_file:
-                    url, report_id, probe_cc, \
-                        probe_asn, date_string, anomaly, \
-                        experiment_failure = line.strip().split("\t")
-                    sites.add(url)
-                    censored_site_count[report_id] = \
-                        censored_site_count.get(report_id, {
-                            "cc": probe_cc,
-                            "asn": probe_asn,
-                            "date": date_string
-                        })
-                    censored_site_count[report_id][anomaly+"-count"] = \
-                        censored_site_count[report_id].get(anomaly+"-count", 0) + 1
+        censored_site_count = {}
+        with self.input().open('r') as in_file:
+            for line in in_file:
+                url, report_id, probe_cc, \
+                    probe_asn, date_string, anomaly, \
+                    experiment_failure = line.strip().split("\t")
+                sites.add(url)
+                censored_site_count[report_id] = \
+                    censored_site_count.get(report_id, {
+                        "cc": probe_cc,
+                        "asn": probe_asn,
+                        "date": date_string
+                    })
+                censored_site_count[report_id][anomaly+"-count"] = \
+                    censored_site_count[report_id].get(anomaly+"-count", 0) + 1
 
         with self.output()['site_list'].open('w') as site_list:
             for site in sites:
