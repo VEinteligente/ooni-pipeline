@@ -3,7 +3,7 @@ from .batch.anomaly_detection_heuristics import DetectAnomalousHTTPHeaderFieldMa
 from .batch.anomaly_detection_heuristics import DetectAnomalousDNSConsistency
 from .batch.anomaly_detection_heuristics import DetectAnomalousHTTPRequests
 from .batch.anomaly_detection_heuristics import DetectAllAnomalies
-from .batch.publish_sanitise_reports import PublishReportsAndStreamsRange
+from .batch.publish_sanitise_streams import PublishReportsAndStreamsRange
 
 
 __all__ = [
