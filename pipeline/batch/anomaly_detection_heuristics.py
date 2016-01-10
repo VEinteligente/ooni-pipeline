@@ -115,7 +115,7 @@ class BlockPagedetector(object):
         blockpage_string = self.known_blockpages.get(cc)
         if not blockpage_string:
             return False
-        if blockpage_string in body:
+        if isinstance(body, str) and blockpage_string in body:
             return True
         return False
 
