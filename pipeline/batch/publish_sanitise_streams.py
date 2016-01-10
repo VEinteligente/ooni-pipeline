@@ -143,7 +143,7 @@ class PublishReportsAndStreams(luigi.Task):
         stream_file.close()
 
 class PublishReportsAndStreamsRange(luigi.Task):
-    date_interval = luigi.DateParameter()
+    date_interval = luigi.DateIntervalParameter()
 
     output_path = luigi.Parameter(default="/data/ooni/public/reports/json/")
     report_path = luigi.Parameter(default="/data/ooni/private/reports-raw/json/")
