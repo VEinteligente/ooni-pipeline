@@ -1,5 +1,7 @@
+import re
 import os
 import json
+import hashlib
 
 from datetime import datetime
 
@@ -8,7 +10,7 @@ import luigi
 from luigi.configuration import get_config
 
 from pipeline.helpers.util import list_report_files, get_luigi_target
-from pipeline.helpers.util import json_loads
+from pipeline.helpers.util import json_loads, json_dumps
 
 
 class PublishReportsAndStreams(luigi.Task):
@@ -139,3 +141,18 @@ class PublishReportsAndStreams(luigi.Task):
         ):
             self.publish_and_sanitise(report_file_path, stream_file, bridge_db)
         stream_file.close()
+
+class PublishReportsAndStreamsRange(luigi.Task):
+    date_interval = luigi.DateParameter()
+
+    output_path = luigi.Parameter(default="/data/ooni/public/reports/json/")
+    report_path = luigi.Parameter(default="/data/ooni/private/reports-raw/json/")
+
+    bridge_db_path = luigi.Parameter(default="/data/ooni/private/bridge_reachability/bridge_db.json")
+
+    def requires(self):
+        for date in self.date_interval:
+            yield PublishReportsAndStreams(date=date,
+                                           output_path=self.output_path,
+                                           report_path=self.report_path,
+                                           bridge_db_path=self.bridge_db_path)
