@@ -111,6 +111,7 @@ schema = [
     'id',
     'input',
     'input_hashes',
+    'annotations',
     'report_id',
     'report_filename',
     'options',
@@ -787,6 +788,7 @@ class InsertMeasurementsIntoPostgres(luigi.postgres.CopyToTable):
 
     columns = [
         ('id', 'UUID PRIMARY KEY'),
+        ('annotations', 'JSONB'),
         ('input', 'TEXT'),
         ('report_id', 'TEXT'),
         ('report_filename', 'TEXT'),
