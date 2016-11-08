@@ -935,7 +935,7 @@ class ListReportsAndRun(luigi.WrapperTask):
         return task_list
 
 
-class notify(luigi.Task):
+class Notify(luigi.Task):
     report_path=luigi.Parameter()
 
     def requires(self):
@@ -943,6 +943,6 @@ class notify(luigi.Task):
 
     def run(self):
         print "hello world"
-        
+
 
 
