@@ -933,3 +933,16 @@ class ListReportsAndRun(luigi.WrapperTask):
             task_list.append(UpdateViews(date_interval=self.date_interval))
 
         return task_list
+
+
+class notify(luigi.Task):
+    report_path=luigi.Parameter()
+
+    def requires(self):
+        return InsertMeasurementsIntoPostgres(self.report_path)
+
+    def run(self):
+        print "hello world"
+        
+
+
