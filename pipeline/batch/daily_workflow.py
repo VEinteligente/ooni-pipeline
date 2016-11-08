@@ -943,6 +943,7 @@ class Notify(luigi.Task):
 
     def run(self):
         print "hello world"
+        logger.info("run notify")
 
 
 
