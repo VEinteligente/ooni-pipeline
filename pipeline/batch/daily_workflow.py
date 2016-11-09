@@ -116,7 +116,6 @@ schema = [
     'id',
     'input',
     'input_hashes',
-    'annotations',
     'report_id',
     'report_filename',
     'options',
@@ -646,7 +645,6 @@ class NormaliseReport(luigi.Task):
             raise Exception("unknown report type: '%s'" % self.report_path)
 
     def run(self):
-        print "here in Normalize"
         out_file = self.output().open('w')
         with self.input().open('r') as fobj:
             for entry in self._report_iterator(fobj):
@@ -794,7 +792,6 @@ class InsertMeasurementsIntoPostgres(luigi.postgres.CopyToTable):
 
     columns = [
         ('id', 'UUID PRIMARY KEY'),
-        ('annotations', 'JSONB'),
         ('input', 'TEXT'),
         ('report_id', 'TEXT'),
         ('report_filename', 'TEXT'),
@@ -844,7 +841,6 @@ class InsertMeasurementsIntoPostgres(luigi.postgres.CopyToTable):
                 yield self._format_record(line.strip(), idx)
 
     def run(self):
-        print "Here in InsertMeasurementsIntoPostgres"
         if not (self.table and self.columns):
             raise Exception("table and columns need to be specified")
 
@@ -896,16 +892,6 @@ class InsertMeasurementsIntoPostgres(luigi.postgres.CopyToTable):
         tmp_file.close()
 
 
-class Notify(luigi.Task):
-    report_path = luigi.Parameter()
-
-    def requires(self):
-        return InsertMeasurementsIntoPostgres(self.report_path)
-
-    def run(self):
-        print "Here in Notify"
-
-
 class UpdateView(RunQuery):
     # This is needed so that it gets re-run on new intervals
     date_interval = luigi.DateIntervalParameter()
@@ -949,7 +935,7 @@ class ListParameter(luigi.Parameter):
 
 class ListReportsAndRun(luigi.WrapperTask):
     date_interval = luigi.DateIntervalParameter()
-    task = luigi.Parameter(default="Notify")
+    task = luigi.Parameter(default="InsertMeasurementsIntoPostgres")
     test_names = ListParameter(default=[])
     ignore_cc = ListParameter(default=[])
     ignore_asn = ListParameter(default=[])
