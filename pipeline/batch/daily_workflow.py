@@ -838,6 +838,20 @@ class InsertMeasurementsIntoPostgres(luigi.postgres.CopyToTable):
                 yield self._format_record(line.strip(), idx)
 
 
+class VerifyFlags(luigi.Task):
+    report_path = luigi.Parameter()
+
+    def requires(self):
+        return None
+
+    def output(self):
+        return luigi.LocalTarget('helloworld.txt')
+
+    def run(self):
+        print "Hello!"
+        with self.output().open('w') as outfile:
+            outfile.write('Hello World!\n')
+
 class UpdateView(RunQuery):
     # This is needed so that it gets re-run on new intervals
     date_interval = luigi.DateIntervalParameter()
