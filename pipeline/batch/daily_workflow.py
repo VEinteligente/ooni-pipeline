@@ -850,8 +850,8 @@ class VerifyFlags(luigi.Task):
 
     def run(self):
         print "Hello!"
-        with self.output().open('w') as outfile:
-            outfile.write('Hello World!\n')
+        # with self.output().open('w') as outfile:
+        #     outfile.write('Hello World!\n')
 
 class UpdateView(RunQuery):
     # This is needed so that it gets re-run on new intervals
