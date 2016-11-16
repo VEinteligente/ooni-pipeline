@@ -15,3 +15,5 @@ password: changeme
 metrics-table: metrics
 domain-table: domains
 asn-table: asns
+[aux_server]
+url: 127.0.0.1:8000/methodChangeme/
