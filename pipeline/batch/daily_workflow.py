@@ -852,6 +852,7 @@ class VerifyFlags(luigi.Task):
         print "Hello!"
         with self.output().open('w') as outfile:
             outfile.write('Hello World!\n')
+            outfile.close()
 
 class UpdateView(RunQuery):
     # This is needed so that it gets re-run on new intervals
