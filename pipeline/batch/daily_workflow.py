@@ -12,7 +12,7 @@ from datetime import datetime
 
 import luigi
 import luigi.postgres
-import requests
+# import requests
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('ooni-pipeline')
@@ -843,8 +843,8 @@ class VerifyFlags(luigi.Task):
     report_path = luigi.Parameter()
 
     def requires(self):
-        return InsertMeasurementsIntoPostgres(self.report_path)
-
+        # return InsertMeasurementsIntoPostgres(self.report_path)
+        return none
     def output(self):
         return luigi.LocalTarget('helloworld.txt')
 
