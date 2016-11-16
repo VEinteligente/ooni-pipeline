@@ -12,7 +12,7 @@ from datetime import datetime
 
 import luigi
 import luigi.postgres
-import requests
+# import requests
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('ooni-pipeline')
