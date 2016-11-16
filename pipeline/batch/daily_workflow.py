@@ -12,6 +12,7 @@ from datetime import datetime
 
 import luigi
 import luigi.postgres
+import requests
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('ooni-pipeline')
@@ -842,13 +843,16 @@ class VerifyFlags(luigi.Task):
     report_path = luigi.Parameter()
 
     def requires(self):
-        return None
+        return InsertMeasurementsIntoPostgres(self.report_path)
 
     def output(self):
         return luigi.LocalTarget('helloworld.txt')
 
     def run(self):
+        # r = requests.get(config.get("aux_server", "url"))
         print "Hello!"
+        # if r.status_code == 200:
+        #     print "Request to update flags was sending successfully"
         with self.output().open('w') as outfile:
             outfile.write('Hello World!\n')
 
