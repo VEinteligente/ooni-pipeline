@@ -6,7 +6,7 @@ import string
 import uuid
 import re
 import os
-
+from luigi.mock import MockFile
 from base64 import b64encode
 from datetime import datetime
 
@@ -846,13 +846,12 @@ class VerifyFlags(luigi.Task):
         return InsertMeasurementsIntoPostgres(self.report_path)
 
     def output(self):
-        return luigi.LocalTarget('helloworld.txt')
+        return MockFile("VerifyFlags", mirror_on_stderr=True)
 
     def run(self):
         print "Hello!"
         with self.output().open('w') as outfile:
             outfile.write('Hello World!\n')
-            outfile.close()
 
 class UpdateView(RunQuery):
     # This is needed so that it gets re-run on new intervals
