@@ -844,7 +844,7 @@ class VerifyFlags(luigi.Task):
 
     def requires(self):
         # return InsertMeasurementsIntoPostgres(self.report_path)
-        return none
+        return None
     def output(self):
         return luigi.LocalTarget('helloworld.txt')
 
