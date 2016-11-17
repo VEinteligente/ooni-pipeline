@@ -850,15 +850,16 @@ class VerifyFlags(luigi.Task):
 
     def run(self):
         try:
-            r = requests.get('http://pandora.saturno.space:8000/measurements/update-flags/')
-            print "Hello!"
+            r = requests.get(config.get("postgres", "host"))
             print str(r.status_code)
             with self.output().open('w') as outfile:
                 outfile.write(str(r.status_code))
         except Exception:
             print "Connection error with server"
             with self.output().open('w') as outfile:
-                outfile.write("ERROR LUIGI")
+                outfile.write(
+                    "ERROR LUIGI: Failed connection with" + str(
+                        config.get("postgres", "host")))
 
 class UpdateView(RunQuery):
     # This is needed so that it gets re-run on new intervals
