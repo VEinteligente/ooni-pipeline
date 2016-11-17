@@ -12,7 +12,7 @@ from datetime import datetime
 
 import luigi
 import luigi.postgres
-# import requests
+import requests
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('ooni-pipeline')
@@ -840,18 +840,19 @@ class InsertMeasurementsIntoPostgres(luigi.postgres.CopyToTable):
 
 
 class VerifyFlags(luigi.Task):
-    report_path = luigi.Parameter()
+    # report_path = luigi.Parameter()
 
     def requires(self):
-        return InsertMeasurementsIntoPostgres(self.report_path)
+        return None
 
     def output(self):
         return MockFile("VerifyFlags", mirror_on_stderr=True)
 
     def run(self):
+        r = requests.get('https://github.com/timeline.json')
         print "Hello!"
         with self.output().open('w') as outfile:
-            outfile.write('Hello World!\n')
+            outfile.write(r.status_code)
 
 class UpdateView(RunQuery):
     # This is needed so that it gets re-run on new intervals
