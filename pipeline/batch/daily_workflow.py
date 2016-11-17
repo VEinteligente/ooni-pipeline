@@ -849,7 +849,7 @@ class VerifyFlags(luigi.Task):
         return MockFile("VerifyFlags", mirror_on_stderr=True)
 
     def run(self):
-        r = requests.get('https://github.com/timeline.json')
+        r = requests.get('https://www.google.co.ve/')
         print "Hello!"
         with self.output().open('w') as outfile:
             outfile.write(str(r.status_code))
