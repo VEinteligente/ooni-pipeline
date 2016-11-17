@@ -852,7 +852,7 @@ class VerifyFlags(luigi.Task):
         r = requests.get('https://github.com/timeline.json')
         print "Hello!"
         with self.output().open('w') as outfile:
-            outfile.write(r.status_code)
+            outfile.write(str(r.status_code))
 
 class UpdateView(RunQuery):
     # This is needed so that it gets re-run on new intervals
