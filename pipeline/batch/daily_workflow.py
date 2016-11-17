@@ -850,7 +850,7 @@ class VerifyFlags(luigi.Task):
 
     def run(self):
         try:
-            r = requests.get(config.get("postgres", "host"))
+            r = requests.get(config.get("aux_server", "url"))
             print str(r.status_code)
             with self.output().open('w') as outfile:
                 outfile.write(str(r.status_code))
@@ -859,7 +859,7 @@ class VerifyFlags(luigi.Task):
             with self.output().open('w') as outfile:
                 outfile.write(
                     "ERROR LUIGI: Failed connection with" + str(
-                        config.get("postgres", "host")))
+                        config.get("aux_server", "url")))
 
 class UpdateView(RunQuery):
     # This is needed so that it gets re-run on new intervals
