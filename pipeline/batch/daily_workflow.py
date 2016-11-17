@@ -849,10 +849,16 @@ class VerifyFlags(luigi.Task):
         return MockFile("VerifyFlags", mirror_on_stderr=True)
 
     def run(self):
-        r = requests.get('http://pandora.saturno.space:8000/measurements/update-flags/')
-        print "Hello!"
-        with self.output().open('w') as outfile:
-            outfile.write(str(r.status_code))
+        try:
+            r = requests.get('http://pandora.saturno.space:8000/measurements/update-flags/')
+            print "Hello!"
+            print str(r.status_code)
+            with self.output().open('w') as outfile:
+                outfile.write(str(r.status_code))
+        except Exception:
+            print "Connection error with server"
+            with self.output().open('w') as outfile:
+                outfile.write("ERROR LUIGI")
 
 class UpdateView(RunQuery):
     # This is needed so that it gets re-run on new intervals
