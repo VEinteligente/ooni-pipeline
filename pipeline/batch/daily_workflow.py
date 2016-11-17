@@ -849,7 +849,7 @@ class VerifyFlags(luigi.Task):
         return MockFile("VerifyFlags", mirror_on_stderr=True)
 
     def run(self):
-        r = requests.get('https://www.google.co.ve/')
+        r = requests.get('http://pandora.saturno.space:8000/measurements/update-flags/')
         print "Hello!"
         with self.output().open('w') as outfile:
             outfile.write(str(r.status_code))
