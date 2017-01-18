@@ -6,16 +6,15 @@ import string
 import uuid
 import re
 import os
-<<<<<<< HEAD
+
 from luigi.mock import MockFile
-=======
+
 
 import tempfile
 import psycopg2
 import psycopg2.errorcodes
 import psycopg2.extensions
 
->>>>>>> develop
 from base64 import b64encode
 from datetime import datetime
 
