@@ -1014,4 +1014,6 @@ class ListReportsAndRun(luigi.WrapperTask):
         if self.update_views is True:
             task_list.append(UpdateViews(date_interval=self.date_interval))
 
+        for task in task_list:
+            print task
         return task_list
