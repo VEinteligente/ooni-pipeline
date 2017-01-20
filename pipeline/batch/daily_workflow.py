@@ -899,7 +899,7 @@ class InsertMeasurementsIntoPostgres(luigi.postgres.CopyToTable):
 
 
 class VerifyFlags(luigi.Task):
-    # report_path = luigi.Parameter()
+    report_path = luigi.Parameter()
 
     def requires(self):
         return None
@@ -913,8 +913,8 @@ class VerifyFlags(luigi.Task):
             print str(r.status_code)
             with self.output().open('w') as outfile:
                 outfile.write(str(r.status_code))
-        except Exception:
-            print "Connection error with server"
+        except Exception as e:
+            print "Connection error with server:" + e
             with self.output().open('w') as outfile:
                 outfile.write(
                     "ERROR LUIGI: Failed connection with" + str(
