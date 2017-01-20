@@ -914,7 +914,7 @@ class VerifyFlags(luigi.Task):
             with self.output().open('w') as outfile:
                 outfile.write(str(r.status_code))
         except Exception as e:
-            print "Connection error with server:" + e
+            print "Connection error with server:", e
             with self.output().open('w') as outfile:
                 outfile.write(
                     "ERROR LUIGI: Failed connection with" + str(
