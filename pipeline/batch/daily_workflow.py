@@ -968,7 +968,7 @@ class ListReportsAndRun(luigi.WrapperTask):
     ignore_cc = ListParameter(default=[])
     ignore_asn = ListParameter(default=[])
 
-    update_views = luigi.BoolParameter(default=False)
+    update_views = luigi.BoolParameter(default=True)
 
     @staticmethod
     def _list_reports_in_bucket(date):
