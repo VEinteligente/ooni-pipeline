@@ -1016,4 +1016,6 @@ class ListReportsAndRun(luigi.WrapperTask):
 
         for task in task_list:
             print task
+
+        task_list.append(VerifyFlags())
         return task_list
