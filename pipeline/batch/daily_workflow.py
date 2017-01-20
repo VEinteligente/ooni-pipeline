@@ -899,7 +899,7 @@ class InsertMeasurementsIntoPostgres(luigi.postgres.CopyToTable):
 
 
 class VerifyFlags(luigi.Task):
-    report_path = luigi.Parameter()
+    # report_path = luigi.Parameter()
 
     def requires(self):
         return None
