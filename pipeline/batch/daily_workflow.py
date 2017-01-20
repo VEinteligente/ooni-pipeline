@@ -968,7 +968,7 @@ class ListReportsAndRun(luigi.WrapperTask):
     ignore_cc = ListParameter(default=[])
     ignore_asn = ListParameter(default=[])
 
-    update_views = luigi.BoolParameter(default=True)
+    update_views = luigi.BoolParameter(default=False)
 
     @staticmethod
     def _list_reports_in_bucket(date):
@@ -1013,9 +1013,6 @@ class ListReportsAndRun(luigi.WrapperTask):
 
         if self.update_views is True:
             task_list.append(UpdateViews(date_interval=self.date_interval))
-
-        for task in task_list:
-            print task
 
         task_list.append(VerifyFlags())
         return task_list
