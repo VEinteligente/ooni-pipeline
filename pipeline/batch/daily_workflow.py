@@ -16,7 +16,7 @@ import psycopg2.errorcodes
 import psycopg2.extensions
 
 from base64 import b64encode
-from datetime import datetime
+import datetime
 
 import luigi
 import luigi.postgres
